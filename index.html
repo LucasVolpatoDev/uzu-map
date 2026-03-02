@@ -10,7 +10,7 @@
   html { margin: 0; padding: 0; width: 100%; height: 100%; }
   body { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
   #uzu-root { position: relative; width: 100%; height: 100%; overflow: hidden; }
-  #uzu-map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; filter: sepia(35%) saturate(85%) brightness(1.02); }
+  #uzu-map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%;  }
   #map-controls { position: absolute; top: 12px; left: 12px; z-index: 20; display: flex; flex-direction: column; gap: 8px; }
   #btn-toggle-filtros { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 8px; padding: 10px 22px; background: #2563eb; color: #fff; border: none; border-radius: 999px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(37,99,235,0.4); transition: background 0.2s; white-space: nowrap; }
   #btn-toggle-filtros:hover { background: #1d4ed8; }
@@ -408,14 +408,14 @@ function iconHeart(){return'<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.
 function toggleFavorite(id){
   if(!isLoggedIn()){showToast('\u2665 Faça login para guardar imóveis','warning');return;}
   var btn=document.getElementById('uzu-heart-'+id),isFav=btn&&btn.classList.contains('favorited');
-  if(isFav){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);if(btn)btn.classList.remove('favorited');showToast('Removido dos favoritos','');}
-  else{if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);if(btn)btn.classList.add('favorited');showToast('\u2665 Guardado nos favoritos!','success');}
+  if(isFav){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);try{window.parent.postMessage({type:'uzu_desfavoritar',id:id},'*');}catch(e){}if(btn)btn.classList.remove('favorited');showToast('Removido dos favoritos','');}
+  else{if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);try{window.parent.postMessage({type:'uzu_favoritar',id:id},'*');}catch(e){}if(btn)btn.classList.add('favorited');showToast('\u2665 Guardado nos favoritos!','success');}
 }
 
 /* ── POPUP ───────────────────────────────────────────────────────────────── */
 function openPopup(id,coords,price,imgFromFeature){
   imgFromFeature=imgFromFeature||'';
-  if(window.bubble_fn_J2B_markerClicked)window.bubble_fn_J2B_markerClicked(id);
+  if(window.bubble_fn_J2B_markerClicked)window.bubble_fn_J2B_markerClicked(id);try{window.parent.postMessage({type:'uzu_markerClicked',id:id},'*');}catch(e){}
   _selectedPropertyId=id;setTimeout(function(){_selectedPropertyId='';},0);
   if(window._uzuPopup)window._uzuPopup.remove();
   var imgId='uzu-img-'+id,priceStr='\u20ac'+(isFinite(price)?price:0).toLocaleString('pt-PT');
