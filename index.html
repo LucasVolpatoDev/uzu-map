@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { margin: 0; padding: 0; width: 100%; height: 100%; }
+  body { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
+  #uzu-root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  #uzu-map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; filter: sepia(35%) saturate(85%) brightness(1.02); }
+  #map-controls { position: absolute; top: 12px; left: 12px; z-index: 20; display: flex; flex-direction: column; gap: 8px; }
+  #btn-toggle-filtros { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 8px; padding: 10px 22px; background: #2563eb; color: #fff; border: none; border-radius: 999px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(37,99,235,0.4); transition: background 0.2s; white-space: nowrap; }
+  #btn-toggle-filtros:hover { background: #1d4ed8; }
+  #btn-toggle-filtros .chev { width: 14px; height: 14px; transition: transform 0.3s; }
+  #btn-toggle-filtros.open .chev { transform: rotate(180deg); }
+  #uzu-filtros-panel { position: absolute; top: 0; right: 0; width: 270px; height: 100%; background: #fff; box-shadow: -4px 0 32px rgba(0,0,0,0.13); z-index: 25; overflow-y: auto; padding: 26px 20px 32px; transform: translateX(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1); scrollbar-width: thin; scrollbar-color: #e5e7eb transparent; }
+  #uzu-filtros-panel.open { transform: translateX(0); }
+  .uzu-popup .mapboxgl-popup-content{border-radius:18px;padding:0;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.20);width:260px;font-family:'Inter',sans-serif;}
+  .uzu-popup .mapboxgl-popup-close-button{display:none;}
+  .uzu-popup .mapboxgl-popup-tip{border-top-color:#fff;}
+  .uzu-card-close{position:absolute;top:10px;left:10px;width:28px;height:28px;background:rgba(0,0,0,0.45);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:20;border:none;padding:0;}
+  .uzu-card-close svg{width:12px;height:12px;stroke:#fff;stroke-width:2.5;fill:none;}
+  .uzu-card-heart{position:absolute;top:10px;right:10px;width:28px;height:28px;background:rgba(0,0,0,0.45);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:20;border:none;padding:0;transition:background 0.2s;}
+  .uzu-card-heart:hover{background:rgba(0,0,0,0.65);}
+  .uzu-card-heart svg{width:14px;height:14px;stroke:#fff;stroke-width:2;fill:none;transition:fill 0.2s,stroke 0.2s;}
+  .uzu-card-heart.favorited svg{fill:#ef4444;stroke:#ef4444;}
+  .uzu-card-meta{display:flex;align-items:center;gap:12px;color:#666;font-size:12px;margin-top:7px;flex-wrap:wrap;}
+  .uzu-card-meta span{display:flex;align-items:center;gap:3px;}
+  .uzu-card-meta svg{width:13px;height:13px;flex-shrink:0;opacity:0.55;}
+  .uzu-toast{position:absolute;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a2e;color:#fff;padding:10px 20px;border-radius:999px;font-size:13px;font-family:'Inter',sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.25);z-index:9999;opacity:0;transition:transform 0.3s ease,opacity 0.3s ease;pointer-events:none;white-space:nowrap;}
+  .uzu-toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+  .uzu-toast.success{background:#2563eb;}.uzu-toast.warning{background:#f59e0b;}.uzu-toast.error{background:#ef4444;}
+  .f-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .f-title{font-size:15px;font-weight:700;color:#111827;}
+  .f-limpar{font-size:12px;font-weight:600;color:#2563eb;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif;padding:0;}
+  .f-divider{height:1px;background:#f3f4f6;margin:12px 0;}
+  .f-section{margin-bottom:14px;}
+  .f-label{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;}
+  .f-pills{display:flex;flex-wrap:wrap;gap:5px;}
+  .f-pill{padding:5px 11px;border-radius:999px;border:1.5px solid #e5e7eb;background:#fff;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;}
+  .f-pill:hover{border-color:#2563eb;color:#2563eb;}
+  .f-pill.active{background:#2563eb;border-color:#2563eb;color:#fff;}
+  .f-range-row{display:flex;gap:6px;align-items:flex-end;}
+  .f-range-col{flex:1;}
+  .f-range-sublabel{font-size:10px;color:#9ca3af;margin-bottom:3px;}
+  .f-range-input{width:100%;padding:7px 9px;border:1.5px solid #e5e7eb;border-radius:9px;font-family:'Inter',sans-serif;font-size:12px;color:#374151;outline:none;transition:border-color 0.15s;}
+  .f-range-input:focus{border-color:#2563eb;}
+  .f-range-sep{color:#9ca3af;font-size:13px;flex-shrink:0;padding-bottom:7px;}
+  .f-counter-wrap{display:flex;align-items:center;width:100%;border:1.5px solid #e5e7eb;border-radius:9px;overflow:hidden;}
+  .f-counter-btn{width:36px;height:34px;border:none;background:#fff;font-size:17px;font-weight:400;color:#374151;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;}
+  .f-counter-btn:first-child{border-right:1.5px solid #e5e7eb;}
+  .f-counter-btn:last-child{border-left:1.5px solid #e5e7eb;}
+  .f-counter-btn:hover{background:#f0f4ff;color:#2563eb;}
+  .f-counter-val{font-size:13px;font-weight:600;color:#1f2937;flex:1;text-align:center;}
+  .f-aplicar{width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s;margin-top:6px;}
+  .f-aplicar:hover{background:#1d4ed8;}
+</style>
+</head>
+<body>
+<div id="uzu-root">
+  <div id="uzu-map"></div>
+
+  <div id="map-controls">
+    <div style="display:flex;gap:6px;">
+      <button id="btn-mapa" onclick="uzuSetStyle('mapa')" style="padding:7px 16px;border-radius:999px;border:none;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;background:#1a1a2e;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.18);">Mapa</button>
+      <button id="btn-satelite" onclick="uzuSetStyle('satelite')" style="padding:7px 16px;border-radius:999px;border:none;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;background:#fff;color:#333;box-shadow:0 2px 8px rgba(0,0,0,0.18);">Satélite</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.18);border:1.5px solid #e5e7eb;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="uzu-search" type="text" placeholder="Propriedade ou local..." style="width:190px;border:none;outline:none;font-size:13px;font-family:'Inter',sans-serif;background:transparent;color:#333;" onkeydown="if(event.key==='Enter')uzuBuscar()" />
+    </div>
+  </div>
+
+  <button id="btn-toggle-filtros" onclick="toggleFiltros()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+    <span id="btn-label">Mostrar Filtros</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+
+  <div id="uzu-filtros-panel">
+    <div class="f-header">
+      <span class="f-title">Filtros</span>
+      <button class="f-limpar" onclick="limparFiltros()">Limpar tudo</button>
+    </div>
+    <div class="f-divider" style="margin-top:0;"></div>
+    <div class="f-section">
+      <div class="f-label">Tipo de Propriedade</div>
+      <div class="f-pills">
+        <button class="f-pill" data-val="Casa" onclick="togglePill(this,'tipo')">Casa</button>
+        <button class="f-pill" data-val="Apartamento" onclick="togglePill(this,'tipo')">Apartamento</button>
+        <button class="f-pill" data-val="Quinta" onclick="togglePill(this,'tipo')">Quinta</button>
+        <button class="f-pill" data-val="Moradia" onclick="togglePill(this,'tipo')">Moradia</button>
+      </div>
+    </div>
+    <div class="f-section">
+      <div class="f-label">Modalidade</div>
+      <div class="f-pills">
+        <button class="f-pill" data-val="UZU Vitalicio" onclick="togglePill(this,'modalidade')">UZU Vitalício</button>
+        <button class="f-pill" data-val="UZU Plena" onclick="togglePill(this,'modalidade')">UZU Plena</button>
+        <button class="f-pill" data-val="UZU Prazo Determinado" onclick="togglePill(this,'modalidade')">UZU Prazo Determinado</button>
+      </div>
+    </div>
+    <div class="f-divider"></div>
+    <div class="f-section">
+      <div class="f-label">Faixa de Preço</div>
+      <div class="f-range-row">
+        <div class="f-range-col">
+          <div class="f-range-sublabel">Mínimo</div>
+          <input class="f-range-input" id="input-precoMin" type="number" placeholder="200000" min="0" />
+        </div>
+        <span class="f-range-sep">—</span>
+        <div class="f-range-col">
+          <div class="f-range-sublabel">Máximo</div>
+          <input class="f-range-input" id="input-precoMax" type="number" placeholder="4000000" min="0" />
+        </div>
+      </div>
+    </div>
+    <div class="f-divider"></div>
+    <div class="f-section">
+      <div class="f-label">Tamanho</div>
+      <div class="f-pills">
+        <button class="f-pill" data-min="0" data-max="100" onclick="toggleTamanho(this)">Até 100 m²</button>
+        <button class="f-pill" data-min="100" data-max="200" onclick="toggleTamanho(this)">100-200 m²</button>
+        <button class="f-pill" data-min="200" data-max="300" onclick="toggleTamanho(this)">200-300 m²</button>
+        <button class="f-pill" data-min="300" data-max="999999" onclick="toggleTamanho(this)">300+ m²</button>
+      </div>
+    </div>
+    <div class="f-divider"></div>
+    <div class="f-section">
+      <div class="f-label">Quartos</div>
+      <div class="f-counter-wrap">
+        <button class="f-counter-btn" onclick="changeCounter('quartos',-1)">−</button>
+        <span class="f-counter-val" id="val-quartos">0</span>
+        <button class="f-counter-btn" onclick="changeCounter('quartos',1)">+</button>
+      </div>
+    </div>
+    <div class="f-section">
+      <div class="f-label">Casas de Banho</div>
+      <div class="f-counter-wrap">
+        <button class="f-counter-btn" onclick="changeCounter('casasBanho',-1)">−</button>
+        <span class="f-counter-val" id="val-casasBanho">0</span>
+        <button class="f-counter-btn" onclick="changeCounter('casasBanho',1)">+</button>
+      </div>
+    </div>
+    <div class="f-section">
+      <div class="f-label">Vagas de Garagem</div>
+      <div class="f-counter-wrap">
+        <button class="f-counter-btn" onclick="changeCounter('vagas',-1)">−</button>
+        <span class="f-counter-val" id="val-vagas">0</span>
+        <button class="f-counter-btn" onclick="changeCounter('vagas',1)">+</button>
+      </div>
+    </div>
+    <div class="f-divider"></div>
+    <div class="f-section">
+      <div class="f-label">Características</div>
+      <div class="f-pills" id="pills-caract">
+        <button class="f-pill" data-val="Mobilado" onclick="toggleCaract(this)">Mobilado</button>
+        <button class="f-pill" data-val="Varanda" onclick="toggleCaract(this)">Varanda</button>
+        <button class="f-pill" data-val="Lareira" onclick="toggleCaract(this)">Lareira</button>
+        <button class="f-pill" data-val="Jardim" onclick="toggleCaract(this)">Jardim</button>
+        <button class="f-pill" data-val="Piscina" onclick="toggleCaract(this)">Piscina</button>
+        <button class="f-pill" data-val="Elevador" onclick="toggleCaract(this)">Elevador</button>
+      </div>
+    </div>
+    <div class="f-divider"></div>
+    <button class="f-aplicar" onclick="aplicarFiltros()">Aplicar Filtros</button>
+  </div>
+
+  <div id="uzu-toast" class="uzu-toast"></div>
+</div>
+
+<script>
+/* ── FILTROS ─────────────────────────────────────────────────────────────── */
+var _filtrosOpen=false,_counters={quartos:0,casasBanho:0,vagas:0},_filtrosPendentes={};
+function toggleFiltros(){_filtrosOpen=!_filtrosOpen;var p=document.getElementById('uzu-filtros-panel'),b=document.getElementById('btn-toggle-filtros'),l=document.getElementById('btn-label');if(_filtrosOpen){p.classList.add('open');b.classList.add('open');l.textContent='Ocultar Filtros';}else{p.classList.remove('open');b.classList.remove('open');l.textContent='Mostrar Filtros';}}
+function togglePill(el,tipo){var c=el.parentElement,was=el.classList.contains('active');c.querySelectorAll('.f-pill').forEach(function(p){p.classList.remove('active');});if(!was){el.classList.add('active');_filtrosPendentes[tipo]=el.dataset.val;}else delete _filtrosPendentes[tipo];}
+function toggleTamanho(el){var c=el.parentElement,was=el.classList.contains('active');c.querySelectorAll('.f-pill').forEach(function(p){p.classList.remove('active');});if(!was){el.classList.add('active');_filtrosPendentes.tamanhoMin=Number(el.dataset.min);_filtrosPendentes.tamanhoMax=Number(el.dataset.max);}else{delete _filtrosPendentes.tamanhoMin;delete _filtrosPendentes.tamanhoMax;}}
+function toggleCaract(el){el.classList.toggle('active');var sel=[];document.querySelectorAll('#pills-caract .f-pill.active').forEach(function(p){sel.push(p.dataset.val);});if(sel.length>0)_filtrosPendentes.caracteristicas=sel;else delete _filtrosPendentes.caracteristicas;}
+function changeCounter(tipo,delta){_counters[tipo]=Math.max(0,(_counters[tipo]||0)+delta);document.getElementById('val-'+tipo).textContent=_counters[tipo];if(_counters[tipo]>0)_filtrosPendentes[tipo]=_counters[tipo];else delete _filtrosPendentes[tipo];}
+function aplicarFiltros(){var pMin=document.getElementById('input-precoMin').value,pMax=document.getElementById('input-precoMax').value;if(pMin&&Number(pMin)>0)_filtrosPendentes.precoMin=Number(pMin);else delete _filtrosPendentes.precoMin;if(pMax&&Number(pMax)>0)_filtrosPendentes.precoMax=Number(pMax);else delete _filtrosPendentes.precoMax;_uzuFiltros=Object.assign({},_filtrosPendentes);fetchProperties();}
+function limparFiltros(){_filtrosPendentes={};_uzuFiltros={};_counters={quartos:0,casasBanho:0,vagas:0};['quartos','casasBanho','vagas'].forEach(function(k){document.getElementById('val-'+k).textContent='0';});document.querySelectorAll('.f-pill.active').forEach(function(p){p.classList.remove('active');});document.getElementById('input-precoMin').value='';document.getElementById('input-precoMax').value='';fetchProperties();}
+
+/* ── USER ────────────────────────────────────────────────────────────────── */
+var _uzuCurrentUserId='';
+try{var cookies=document.cookie.split(';');for(var ci=0;ci<cookies.length;ci++){var c=cookies[ci].trim(),eqIdx=c.indexOf('=');if(eqIdx===-1)continue;var cName=c.substring(0,eqIdx),cVal=c.substring(eqIdx+1);if(cName.indexOf('_u1_')!==-1&&cName.indexOf('main')!==-1&&cVal&&cVal.indexOf('x')!==-1){_uzuCurrentUserId=cVal;break;}}}catch(e){}
+window.bubble_fn_J2B_userId=function(val){_uzuCurrentUserId=val||'';};
+window.addEventListener('message',function(e){if(!e.data)return;if(e.data.type==='uzu_userid')_uzuCurrentUserId=e.data.userId||'';if(e.data.type==='uzu_setFiltros'){_uzuFiltros=e.data.filtros||{};fetchProperties();}});
+
+/* ── TOAST ───────────────────────────────────────────────────────────────── */
+function showToast(msg,type){var t=document.getElementById('uzu-toast');if(!t)return;t.textContent=msg;t.className='uzu-toast '+(type||'');void t.offsetWidth;t.classList.add('show');clearTimeout(window._uzuToastTimer);window._uzuToastTimer=setTimeout(function(){t.classList.remove('show');},2500);}
+function isLoggedIn(){return !!(_uzuCurrentUserId&&_uzuCurrentUserId!==''&&_uzuCurrentUserId.indexOf('[[')===-1);}
+
+/* ── MAPA STYLE ──────────────────────────────────────────────────────────── */
+var _uzuCurrentStyle='mapa';
+function uzuSetStyle(style){if(_uzuCurrentStyle===style)return;_uzuCurrentStyle=style;var styles={'mapa':'mapbox://styles/mapbox/outdoors-v12','satelite':'mapbox://styles/mapbox/satellite-streets-v12'};var bM=document.getElementById('btn-mapa'),bS=document.getElementById('btn-satelite');if(style==='mapa'){bM.style.background='#1a1a2e';bM.style.color='#fff';bS.style.background='#fff';bS.style.color='#333';}else{bS.style.background='#1a1a2e';bS.style.color='#fff';bM.style.background='#fff';bM.style.color='#333';}map.off('style.load',_uzuOnStyleLoad);map.once('style.load',_uzuOnStyleLoad);map.setStyle(styles[style]);}
+function _uzuOnStyleLoad(){ensureSourceAndLayers();fetchProperties();}
+
+/* ── MAPBOX INIT ─────────────────────────────────────────────────────────── */
+mapboxgl.accessToken='pk.eyJ1IjoidXp1aG9tZSIsImEiOiJjbWtneHM0OGQwYTd5M2ZxeWQ3bGYxd2hsIn0.SeMnhsNY8QGyDDdfA_n-0A';
+var map=new mapboxgl.Map({container:'uzu-map',style:'mapbox://styles/mapbox/outdoors-v12',center:[-8.0,39.5],zoom:6});
+window._uzuMap=map;
+var fetchController=null,_selectedPropertyId='',_uzuFiltros={},_uzuSkipNextMoveend=false;
+
+function debounce(fn,delay){var timer;return function(){var args=arguments,ctx=this;clearTimeout(timer);timer=setTimeout(function(){fn.apply(ctx,args);},delay);};}
+
+/* ── NORMALIZA URL BUBBLE ────────────────────────────────────────────────── */
+function normalizeImageUrl(u){
+  if(!u)return'';
+  u=String(u).trim();
+  if(u.startsWith('http://')||u.startsWith('https://'))return u;
+  if(u.startsWith('//'))return'https:'+u;
+  return'https://510a37fb0cd15334d1f7fc33af15451c.cdn.bubble.io/'+u;
+}
+
+/* ── LAYERS ──────────────────────────────────────────────────────────────── */
+function ensureSourceAndLayers(){
+  if(map.getSource('properties'))return;
+  map.addSource('properties',{type:'geojson',data:{type:'FeatureCollection',features:[]},cluster:true,clusterMaxZoom:14,clusterRadius:50});
+  map.addLayer({id:'clusters',type:'circle',source:'properties',filter:['has','point_count'],paint:{'circle-color':'#2c2c2c','circle-radius':20}});
+  map.addLayer({id:'cluster-count',type:'symbol',source:'properties',filter:['has','point_count'],layout:{'text-field':'{point_count_abbreviated}','text-size':13},paint:{'text-color':'#ffffff'}});
+  map.addLayer({id:'unclustered-bg',type:'circle',source:'properties',filter:['!',['has','point_count']],paint:{'circle-color':'#ffffff','circle-radius':22,'circle-stroke-width':1.5,'circle-stroke-color':'#cccccc'}});
+  map.addLayer({id:'unclustered-point',type:'symbol',source:'properties',filter:['!',['has','point_count']],layout:{'text-field':['concat','\u20ac',['to-string',['coalesce',['get','price'],0]]],'text-size':12,'text-font':['DIN Offc Pro Medium','Arial Unicode MS Bold']},paint:{'text-color':'#1a1a2e'}});
+}
+function setGeoJSON(g){ensureSourceAndLayers();map.getSource('properties').setData(g);}
+
+/* ── BUILD URL ───────────────────────────────────────────────────────────── */
+function buildUrl(swLat,swLng,neLat,neLng,query){
+  var url='https://www.uzuhome.com/version-734wl/api/1.1/wf/geojson_properties'
+    +'?swLat='+encodeURIComponent(swLat)+'&swLng='+encodeURIComponent(swLng)
+    +'&neLat='+encodeURIComponent(neLat)+'&neLng='+encodeURIComponent(neLng)
+    +'&id=&query='+encodeURIComponent(query||'');
+  if(_uzuFiltros.tipo)url+='&tipo='+encodeURIComponent(_uzuFiltros.tipo);
+  if(_uzuFiltros.modalidade)url+='&modalidade='+encodeURIComponent(_uzuFiltros.modalidade);
+  if(_uzuFiltros.precoMin)url+='&precoMin='+encodeURIComponent(_uzuFiltros.precoMin);
+  if(_uzuFiltros.precoMax)url+='&precoMax='+encodeURIComponent(_uzuFiltros.precoMax);
+  if(_uzuFiltros.tamanhoMin)url+='&tamanhoMin='+encodeURIComponent(_uzuFiltros.tamanhoMin);
+  if(_uzuFiltros.tamanhoMax)url+='&tamanhoMax='+encodeURIComponent(_uzuFiltros.tamanhoMax);
+  if(_uzuFiltros.quartos)url+='&quartos='+encodeURIComponent(_uzuFiltros.quartos);
+  if(_uzuFiltros.casasBanho)url+='&casasBanho='+encodeURIComponent(_uzuFiltros.casasBanho);
+  if(_uzuFiltros.vagas)url+='&vagas='+encodeURIComponent(_uzuFiltros.vagas);
+  if(_uzuFiltros.caracteristicas&&_uzuFiltros.caracteristicas.length>0)url+='&caracteristicas='+encodeURIComponent(_uzuFiltros.caracteristicas.join(','));
+  return url;
+}
+
+/* ── PARSE GEOJSON ───────────────────────────────────────────────────────── */
+function parseGeoJSONResponse(data){
+  var r=data&&data.response?data.response:null;
+  if(!r)return{features:[]};
+  var ids=Array.isArray(r.ids)?r.ids:[],
+      lats=Array.isArray(r.lats)?r.lats:[],
+      lngs=Array.isArray(r.lngs)?r.lngs:[],
+      prices=Array.isArray(r.prices)?r.prices:[],
+      imageUrls=Array.isArray(r.image_urls)?r.image_urls:[];
+  return{features:ids.map(function(id,i){
+    var lat=Number(lats[i]),lng=Number(lngs[i]),
+        price=Number(prices[i]!=null?prices[i]:0),
+        imgUrl=imageUrls[i]||'';
+    return{type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},
+           properties:{id:id,price:isFinite(price)?price:0,imgUrl:imgUrl}};
+  }).filter(function(f){var c=f.geometry.coordinates;return isFinite(c[0])&&isFinite(c[1]);})};
+}
+
+/* ── FETCH PROPERTIES (navegação normal do mapa, sem query) ──────────────── */
+function fetchProperties(){
+  var bounds=map.getBounds();
+  var swLat=bounds.getSouthWest().lat,swLng=bounds.getSouthWest().lng,
+      neLat=bounds.getNorthEast().lat,neLng=bounds.getNorthEast().lng;
+  if(window.bubble_fn_J2B_swLat)window.bubble_fn_J2B_swLat(swLat);
+  if(window.bubble_fn_J2B_swLng)window.bubble_fn_J2B_swLng(swLng);
+  if(window.bubble_fn_J2B_neLat)window.bubble_fn_J2B_neLat(neLat);
+  if(window.bubble_fn_J2B_neLng)window.bubble_fn_J2B_neLng(neLng);
+  if(fetchController)fetchController.abort();
+  fetchController=new AbortController();
+  fetch(buildUrl(swLat,swLng,neLat,neLng,''),{signal:fetchController.signal})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var result=parseGeoJSONResponse(data);
+      setGeoJSON({type:'FeatureCollection',features:result.features});
+      if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
+    })
+    .catch(function(err){if(err&&err.name==='AbortError')return;console.error(err);});
+}
+
+/* ── GEOCODING: navega para local sem abrir popup ────────────────────────── */
+// Controller dedicado APENAS ao geocoding — nunca é cancelado pelo fetchController
+var _geocodeController=null;
+function uzuGeocode(query){
+  query=(query||'').trim();
+  if(!query)return;
+  if(_geocodeController)_geocodeController.abort();
+  _geocodeController=new AbortController();
+  var url='https://api.mapbox.com/geocoding/v5/mapbox.places/'+encodeURIComponent(query)+'.json'
+    +'?access_token='+mapboxgl.accessToken
+    +'&limit=1&language=pt,en'
+    +'&types=country,region,place,locality,neighborhood,district,poi';
+  fetch(url,{signal:_geocodeController.signal})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var f=data&&data.features&&data.features[0]?data.features[0]:null;
+      if(!f){showToast('Local nao encontrado','warning');return;}
+      _uzuSkipNextMoveend=true;
+      if(f.bbox&&f.bbox.length===4){
+        map.fitBounds([[f.bbox[0],f.bbox[1]],[f.bbox[2],f.bbox[3]]],{padding:60,duration:1000});
+      }else{
+        map.flyTo({center:f.center,zoom:10,essential:true});
+      }
+      showToast('A mostrar: '+(f.place_name_pt||f.place_name||query),'success');
+      setTimeout(function(){_uzuSkipNextMoveend=false;},1500);
+    })
+    .catch(function(err){
+      if(err&&err.name==='AbortError')return;
+      showToast('Local nao encontrado','warning');
+    });
+}
+
+/* ── BUSCA PRINCIPAL ─────────────────────────────────────────────────────────
+   Fluxo:
+   1. Chama API de propriedades com a query
+   2. Se sem resultados → geocoding direto
+   3. Se com resultados → verifica títulos um a um
+      → título bate (score>0) → voa + abre popup
+      → nenhum bate           → geocoding
+   Usa _searchController separado para não interferir com fetchController
+   ────────────────────────────────────────────────────────────────────────── */
+var _searchController=null;
+function uzuBuscar(){
+  var input=document.getElementById('uzu-search');
+  var query=(input?input.value:'').trim();
+  if(!query){fetchProperties();return;}
+
+  // Controller separado só para a busca — não cancela o geocode nem o fetchProperties
+  if(_searchController)_searchController.abort();
+  _searchController=new AbortController();
+  var signal=_searchController.signal;
+
+  fetch(buildUrl(-90,-180,90,180,query),{signal:signal})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(signal.aborted)return;
+      var result=parseGeoJSONResponse(data);
+      var features=result.features;
+
+      if(!features||features.length===0){
+        uzuGeocode(query);
+        return;
+      }
+
+      var queryLow=query.toLowerCase().trim();
+      var pending=features.length,bestFeature=null,bestScore=0,resultsMap={};
+
+      features.forEach(function(f){
+        // Cada fetch de detalhe tem o seu próprio tratamento — sem signal partilhado
+        fetch('https://www.uzuhome.com/version-734wl/api/1.1/obj/propriedades/'+f.properties.id)
+          .then(function(r){return r.json();})
+          .then(function(d){
+            if(signal.aborted)return;
+            var p=d&&d.response?d.response:null;
+            if(p){
+              resultsMap[f.properties.id]=p;
+              var titulo=(p['Titulo']||p['ai_titulo']||'').toLowerCase().trim();
+              var score=0;
+              if(titulo&&titulo===queryLow) score=3;
+              else if(titulo&&titulo.indexOf(queryLow)!==-1) score=2;
+              else if(titulo&&titulo.length>2&&queryLow.indexOf(titulo)!==-1) score=1;
+              if(score>bestScore){bestScore=score;bestFeature=f;}
+            }
+          })
+          .catch(function(){})
+          .then(function(){
+            if(signal.aborted)return;
+            pending--;
+            if(pending===0){
+              if(bestScore>0&&bestFeature){
+                var p=resultsMap[bestFeature.properties.id];
+                var tLng=p&&isFinite(Number(p.lng))?Number(p.lng):bestFeature.geometry.coordinates[0];
+                var tLat=p&&isFinite(Number(p.lat))?Number(p.lat):bestFeature.geometry.coordinates[1];
+                _uzuSkipNextMoveend=true;
+                map.flyTo({center:[tLng,tLat],zoom:15,essential:true});
+                map.once('idle',function(){
+                  openPopup(
+                    bestFeature.properties.id,
+                    [tLng,tLat],
+                    p?Number(p['Valor UZU:']||0):Number(bestFeature.properties.price||0),
+                    normalizeImageUrl(bestFeature.properties.imgUrl||'')
+                  );
+                  setTimeout(function(){_uzuSkipNextMoveend=false;},1000);
+                });
+              } else {
+                uzuGeocode(query);
+              }
+            }
+          });
+      });
+    })
+    .catch(function(err){if(err&&err.name==='AbortError')return;console.error(err);});
+}
+
+/* ── ICONS ───────────────────────────────────────────────────────────────── */
+function iconBed(){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20v-6a2 2 0 012-2h16a2 2 0 012 2v6"/><path d="M2 14v-4a2 2 0 012-2h4v6"/><rect x="2" y="8" width="20" height="6" rx="2"/></svg>';}
+function iconBath(){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16v4a4 4 0 01-4 4H8a4 4 0 01-4-4v-4z"/><path d="M6 12V6a2 2 0 012-2h1"/></svg>';}
+function iconArea(){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>';}
+function iconHeart(){return'<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';}
+
+/* ── FAVORITO ────────────────────────────────────────────────────────────── */
+function toggleFavorite(id){
+  if(!isLoggedIn()){showToast('\u2665 Faça login para guardar imóveis','warning');return;}
+  var btn=document.getElementById('uzu-heart-'+id),isFav=btn&&btn.classList.contains('favorited');
+  if(isFav){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);if(btn)btn.classList.remove('favorited');showToast('Removido dos favoritos','');}
+  else{if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);if(btn)btn.classList.add('favorited');showToast('\u2665 Guardado nos favoritos!','success');}
+}
+
+/* ── POPUP ───────────────────────────────────────────────────────────────── */
+function openPopup(id,coords,price,imgFromFeature){
+  imgFromFeature=imgFromFeature||'';
+  if(window.bubble_fn_J2B_markerClicked)window.bubble_fn_J2B_markerClicked(id);
+  _selectedPropertyId=id;setTimeout(function(){_selectedPropertyId='';},0);
+  if(window._uzuPopup)window._uzuPopup.remove();
+  var imgId='uzu-img-'+id,priceStr='\u20ac'+(isFinite(price)?price:0).toLocaleString('pt-PT');
+  var html=''
+    +'<div style="position:relative;">'
+    +'<div style="width:100%;height:155px;background:#e0e0e0;overflow:hidden;">'
+    +'<img id="'+imgId+'" src="'+(imgFromFeature||'https://placehold.co/520x310?text=...')+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src=\'https://placehold.co/520x310?text=Sem+imagem\'" />'
+    +'</div>'
+    +'<button class="uzu-card-close" onclick="if(window._uzuPopup)window._uzuPopup.remove()"><svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg></button>'
+    +'<button id="uzu-heart-'+id+'" class="uzu-card-heart" onclick="toggleFavorite(\''+id+'\')">'+iconHeart()+'</button>'
+    +'</div>'
+    +'<div style="padding:12px 14px 14px;">'
+    +'<div id="uzu-title-'+id+'" style="font-weight:700;font-size:14px;color:#1a1a2e;line-height:1.3;font-family:Inter,sans-serif;">A carregar...</div>'
+    +'<div id="uzu-loc-'+id+'" style="color:#999;font-size:12px;margin-top:3px;"></div>'
+    +'<div id="uzu-meta-'+id+'" class="uzu-card-meta"></div>'
+    +'<div style="width:100%;height:1px;background:#f0f0f0;margin:10px 0;"></div>'
+    +'<div id="uzu-price-'+id+'" style="color:#2563eb;font-weight:800;font-size:17px;font-family:Inter,sans-serif;">'+priceStr+'<span style="font-weight:400;font-size:11px;color:#aaa;margin-left:3px;">/total</span></div>'
+    +'</div>';
+
+  window._uzuPopup=new mapboxgl.Popup({offset:25,closeButton:false,className:'uzu-popup'})
+    .setLngLat(coords).setHTML(html).addTo(map);
+
+  fetch('https://www.uzuhome.com/version-734wl/api/1.1/obj/propriedades/'+id)
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var p=data&&data.response?data.response:null;if(!p)return;
+      var tEl=document.getElementById('uzu-title-'+id),
+          lEl=document.getElementById('uzu-loc-'+id),
+          mEl=document.getElementById('uzu-meta-'+id),
+          pEl=document.getElementById('uzu-price-'+id),
+          iEl=document.getElementById(imgId),
+          hEl=document.getElementById('uzu-heart-'+id);
+      if(tEl)tEl.innerText=p['Titulo']||p['ai_titulo']||'';
+      if(lEl)lEl.innerText=p['Pais txt']||'';
+      var pv=Number(p['Valor UZU:']||0);
+      if(pEl)pEl.innerHTML='\u20ac'+(isFinite(pv)?pv:0).toLocaleString('pt-PT')+'<span style="font-weight:400;font-size:11px;color:#aaa;margin-left:3px;">/total</span>';
+      if(mEl){
+        var q=p['Quartos']||'',cb=p['Casas Banho']||'',a=p['Area Privativa']||'',parts=[];
+        if(q)parts.push('<span>'+iconBed()+q+'</span>');
+        if(cb)parts.push('<span>'+iconBath()+cb+'</span>');
+        if(a)parts.push('<span>'+iconArea()+a+' m\u00b2</span>');
+        mEl.innerHTML=parts.join('');
+      }
+      if(iEl){
+        var rawImg=p['Cover_url']||p['cover_url']||'';
+        if(Array.isArray(rawImg))rawImg=rawImg[0]||'';
+        var imgUrl=normalizeImageUrl(String(rawImg).trim());
+        // Só substitui se vier URL válida do /obj/ (não sobrescreve com vazio)
+        if(imgUrl)iEl.src=imgUrl;
+      }
+      if(hEl&&isLoggedIn()){
+        var fav=p['Favorit']||[];
+        if(Array.isArray(fav)&&fav.indexOf(_uzuCurrentUserId)!==-1)hEl.classList.add('favorited');
+      }
+    }).catch(function(err){console.error('Erro detalhes:',err);});
+}
+
+/* ── INIT ────────────────────────────────────────────────────────────────── */
+function waitForBubbleAndFetch(retries){
+  retries=retries||0;
+  if(retries>20){fetchProperties();return;}
+  if(typeof window.bubble_fn_J2B_totalPropriedades==='function')fetchProperties();
+  else setTimeout(function(){waitForBubbleAndFetch(retries+1);},100);
+}
+window.uzuSetFiltros=function(f){_uzuFiltros=f||{};fetchProperties();};
+
+map.on('load',function(){
+  ensureSourceAndLayers();
+  setTimeout(function(){map.resize();},50);
+  setTimeout(function(){map.resize();},300);
+  waitForBubbleAndFetch();
+  var input=document.getElementById('uzu-search');
+  if(input){
+    // Apagar o input restaura o mapa normal
+    input.addEventListener('input',debounce(function(){
+      if(input.value.trim()==='')fetchProperties();
+    },400));
+  }
+});
+
+window.addEventListener('resize',function(){if(map)map.resize();});
+map.on('moveend',debounce(function(){if(_uzuSkipNextMoveend)return;fetchProperties();},500));
+map.on('click','clusters',function(e){
+  var f=map.queryRenderedFeatures(e.point,{layers:['clusters']});
+  if(!f||!f[0])return;
+  var cId=f[0].properties.cluster_id,cC=f[0].geometry.coordinates;
+  map.getSource('properties').getClusterExpansionZoom(cId,function(err,zoom){if(!err)map.easeTo({center:cC,zoom:zoom});});
+});
+map.on('mouseenter','clusters',function(){map.getCanvas().style.cursor='pointer';});
+map.on('mouseleave','clusters',function(){map.getCanvas().style.cursor='';});
+map.on('click','unclustered-point',function(e){
+  var f=e.features&&e.features[0];if(!f)return;
+  var props=f.properties||{},coords=f.geometry.coordinates.slice();
+  openPopup(props.id,coords,Number(props.price!=null?props.price:0),normalizeImageUrl(props.imgUrl||''));
+});
+map.on('mouseenter','unclustered-point',function(){map.getCanvas().style.cursor='pointer';});
+map.on('mouseleave','unclustered-point',function(){map.getCanvas().style.cursor='';});
+window.flyToProperty=function(lat,lng,id){map.flyTo({center:[lng,lat],zoom:14});};
+</script>
+</body>
+</html>
