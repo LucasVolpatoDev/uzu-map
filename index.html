@@ -471,13 +471,12 @@ function openPopup(id,coords,price,imgFromFeature){
         if(imgUrl)iEl.src=imgUrl;
       }
       if(hEl&&isLoggedIn()){
-        if(_uzuLocalFavs[id]===true){hEl.classList.add('favorited');}
-        else if(_uzuLocalFavs[id]===false){hEl.classList.remove('favorited');}
-        else{
+        if(_uzuLocalFavs[id]===undefined){
           var fav=p['Favorit']||[];
-          if(Array.isArray(fav)&&fav.indexOf(_uzuCurrentUserId)!==-1){hEl.classList.add('favorited');_uzuLocalFavs[id]=true;}
-          else{_uzuLocalFavs[id]=false;}
+          _uzuLocalFavs[id]=(Array.isArray(fav)&&fav.indexOf(_uzuCurrentUserId)!==-1);
         }
+        if(_uzuLocalFavs[id])hEl.classList.add('favorited');
+        else hEl.classList.remove('favorited');
       }
     }).catch(function(err){console.error('Erro detalhes:',err);});
 }
