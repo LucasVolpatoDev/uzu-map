@@ -195,12 +195,32 @@ function isLoggedIn(){return !!(_uzuCurrentUserId&&_uzuCurrentUserId!==''&&_uzuC
 
 /* ── MAPA STYLE ──────────────────────────────────────────────────────────── */
 var _uzuCurrentStyle='mapa';
-function uzuSetStyle(style){if(_uzuCurrentStyle===style)return;_uzuCurrentStyle=style;var styles={'mapa':'mapbox://styles/mapbox/light-v11','satelite':'mapbox://styles/mapbox/satellite-streets-v12'};var bM=document.getElementById('btn-mapa'),bS=document.getElementById('btn-satelite');if(style==='mapa'){bM.style.background='#1a1a2e';bM.style.color='#fff';bS.style.background='#fff';bS.style.color='#333';}else{bS.style.background='#1a1a2e';bS.style.color='#fff';bM.style.background='#fff';bM.style.color='#333';}map.off('style.load',_uzuOnStyleLoad);map.once('style.load',_uzuOnStyleLoad);map.setStyle(styles[style]);}
+function uzuSetStyle(style){if(_uzuCurrentStyle===style)return;_uzuCurrentStyle=style;var styles={'mapa':_vintageStyle,'satelite':'mapbox://styles/mapbox/satellite-streets-v12'};var bM=document.getElementById('btn-mapa'),bS=document.getElementById('btn-satelite');if(style==='mapa'){bM.style.background='#1a1a2e';bM.style.color='#fff';bS.style.background='#fff';bS.style.color='#333';}else{bS.style.background='#1a1a2e';bS.style.color='#fff';bM.style.background='#fff';bM.style.color='#333';}map.off('style.load',_uzuOnStyleLoad);map.once('style.load',_uzuOnStyleLoad);map.setStyle(styles[style]);}
 function _uzuOnStyleLoad(){ensureSourceAndLayers();fetchProperties();}
 
 /* ── MAPBOX INIT ─────────────────────────────────────────────────────────── */
 mapboxgl.accessToken='pk.eyJ1IjoidXp1aG9tZSIsImEiOiJjbWtneHM0OGQwYTd5M2ZxeWQ3bGYxd2hsIn0.SeMnhsNY8QGyDDdfA_n-0A';
-var map=new mapboxgl.Map({container:'uzu-map',style:'mapbox://styles/mapbox/light-v11',center:[-8.0,39.5],zoom:6});
+var _vintageStyle={
+  version:8,
+  sources:{
+    'watercolor':{
+      type:'raster',
+      tiles:['https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg'],
+      tileSize:256,
+      attribution:'Map tiles by <a target="_top" rel="noopener" href="https://stamen.com">Stamen Design</a>, under <a target="_top" rel="noopener" href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" rel="noopener" href="https://openstreetmap.org">OpenStreetMap</a>, under <a target="_top" rel="noopener" href="https://creativecommons.org/licenses/by-sa/3.0">CC BY SA</a>'
+    },
+    'labels':{
+      type:'raster',
+      tiles:['https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}.png'],
+      tileSize:256
+    }
+  },
+  layers:[
+    {id:'watercolor-layer',type:'raster',source:'watercolor',minzoom:0,maxzoom:22},
+    {id:'labels-layer',type:'raster',source:'labels',minzoom:0,maxzoom:22,paint:{'raster-opacity':0.6}}
+  ]
+};
+var map=new mapboxgl.Map({container:'uzu-map',style:_vintageStyle,center:[-8.0,39.5],zoom:6});
 window._uzuMap=map;
 var fetchController=null,_selectedPropertyId='',_uzuFiltros={},_uzuSkipNextMoveend=false;
 
@@ -219,7 +239,7 @@ function normalizeImageUrl(u){
 function ensureSourceAndLayers(){
   if(map.getSource('properties'))return;
   map.addSource('properties',{type:'geojson',data:{type:'FeatureCollection',features:[]},cluster:true,clusterMaxZoom:14,clusterRadius:50});
-  map.addLayer({id:'clusters',type:'circle',source:'properties',filter:['has','point_count'],paint:{'circle-color':'#1a1a2e','circle-radius':20}});
+  map.addLayer({id:'clusters',type:'circle',source:'properties',filter:['has','point_count'],paint:{'circle-color':'#2c2c2c','circle-radius':20}});
   map.addLayer({id:'cluster-count',type:'symbol',source:'properties',filter:['has','point_count'],layout:{'text-field':'{point_count_abbreviated}','text-size':13},paint:{'text-color':'#ffffff'}});
   map.addLayer({id:'unclustered-bg',type:'circle',source:'properties',filter:['!',['has','point_count']],paint:{'circle-color':'#ffffff','circle-radius':22,'circle-stroke-width':1.5,'circle-stroke-color':'#cccccc'}});
   map.addLayer({id:'unclustered-point',type:'symbol',source:'properties',filter:['!',['has','point_count']],layout:{'text-field':['concat','\u20ac',['to-string',['coalesce',['get','price'],0]]],'text-size':12,'text-font':['DIN Offc Pro Medium','Arial Unicode MS Bold']},paint:{'text-color':'#1a1a2e'}});
