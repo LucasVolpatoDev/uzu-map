@@ -185,7 +185,7 @@ function aplicarFiltros(){
   if(pMin&&Number(pMin)>0)_filtrosPendentes.precoMin=Number(pMin);else delete _filtrosPendentes.precoMin;
   if(pMax&&Number(pMax)>0)_filtrosPendentes.precoMax=Number(pMax);else delete _filtrosPendentes.precoMax;
   _uzuFiltros=Object.assign({},_filtrosPendentes);
-  // Busca global para aplicar filtros em todo o mundo
+  // Busca global para garantir que encontra todas as propriedades filtradas
   if(fetchController)fetchController.abort();
   fetchController=new AbortController();
   fetch(buildUrl(-90,-180,90,180,''),{signal:fetchController.signal})
@@ -195,21 +195,6 @@ function aplicarFiltros(){
       setGeoJSON({type:'FeatureCollection',features:result.features});
       if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
       try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
-      // Se só 1 resultado, navega para ele
-      if(result.features.length===1){
-        var f=result.features[0];
-        var coords=f.geometry.coordinates;
-        _uzuSkipNextMoveend=true;
-        map.flyTo({center:coords,zoom:14,essential:true});
-        setTimeout(function(){_uzuSkipNextMoveend=false;},1500);
-      } else if(result.features.length>1){
-        // Ajusta bounds para mostrar todos os resultados
-        var bounds=new mapboxgl.LngLatBounds();
-        result.features.forEach(function(f){bounds.extend(f.geometry.coordinates);});
-        _uzuSkipNextMoveend=true;
-        map.fitBounds(bounds,{padding:80,maxZoom:14,duration:800});
-        setTimeout(function(){_uzuSkipNextMoveend=false;},1500);
-      }
     })
     .catch(function(err){if(err&&err.name==='AbortError')return;});
 }
