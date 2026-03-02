@@ -185,6 +185,7 @@ function limparFiltros(){_filtrosPendentes={};_uzuFiltros={};_counters={quartos:
 
 /* ── USER ────────────────────────────────────────────────────────────────── */
 var _uzuCurrentUserId='';
+var _uzuLocalFavs={};
 // Lê userId da URL se fornecido pelo Bubble
 try{var _urlParams=new URLSearchParams(window.location.search);var _uidFromUrl=_urlParams.get('uid');if(_uidFromUrl&&_uidFromUrl.length>5)_uzuCurrentUserId=_uidFromUrl;}catch(e){}
 try{var cookies=document.cookie.split(';');for(var ci=0;ci<cookies.length;ci++){var c=cookies[ci].trim(),eqIdx=c.indexOf('=');if(eqIdx===-1)continue;var cName=c.substring(0,eqIdx),cVal=c.substring(eqIdx+1);if(cName.indexOf('_u1_')!==-1&&cName.indexOf('main')!==-1&&cVal&&cVal.indexOf('x')!==-1){_uzuCurrentUserId=cVal;break;}}}catch(e){}
@@ -411,8 +412,8 @@ function iconHeart(){return'<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.
 function toggleFavorite(id){
   if(!isLoggedIn()){showToast('\u2665 Faça login para guardar imóveis','warning');return;}
   var btn=document.getElementById('uzu-heart-'+id),isFav=btn&&btn.classList.contains('favorited');
-  if(isFav){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);try{window.parent.postMessage({type:'uzu_desfavoritar',id:id},'*');}catch(e){}if(btn)btn.classList.remove('favorited');showToast('Removido dos favoritos','');}
-  else{if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);try{window.parent.postMessage({type:'uzu_favoritar',id:id},'*');}catch(e){}if(btn)btn.classList.add('favorited');showToast('\u2665 Guardado nos favoritos!','success');}
+  if(isFav){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);try{window.parent.postMessage({type:'uzu_desfavoritar',id:id},'*');}catch(e){}if(btn)btn.classList.remove('favorited');_uzuLocalFavs[id]=false;showToast('Removido dos favoritos','');}
+  else{_uzuLocalFavs[id]=true;if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);try{window.parent.postMessage({type:'uzu_favoritar',id:id},'*');}catch(e){}if(btn)btn.classList.add('favorited');showToast('\u2665 Guardado nos favoritos!','success');}
 }
 
 /* ── POPUP ───────────────────────────────────────────────────────────────── */
@@ -470,8 +471,13 @@ function openPopup(id,coords,price,imgFromFeature){
         if(imgUrl)iEl.src=imgUrl;
       }
       if(hEl&&isLoggedIn()){
-        var fav=p['Favorit']||[];
-        if(Array.isArray(fav)&&fav.indexOf(_uzuCurrentUserId)!==-1)hEl.classList.add('favorited');
+        if(_uzuLocalFavs[id]===true){hEl.classList.add('favorited');}
+        else if(_uzuLocalFavs[id]===false){hEl.classList.remove('favorited');}
+        else{
+          var fav=p['Favorit']||[];
+          if(Array.isArray(fav)&&fav.indexOf(_uzuCurrentUserId)!==-1){hEl.classList.add('favorited');_uzuLocalFavs[id]=true;}
+          else{_uzuLocalFavs[id]=false;}
+        }
       }
     }).catch(function(err){console.error('Erro detalhes:',err);});
 }
