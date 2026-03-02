@@ -185,6 +185,8 @@ function limparFiltros(){_filtrosPendentes={};_uzuFiltros={};_counters={quartos:
 
 /* ── USER ────────────────────────────────────────────────────────────────── */
 var _uzuCurrentUserId='';
+// Lê userId da URL se fornecido pelo Bubble
+try{var _urlParams=new URLSearchParams(window.location.search);var _uidFromUrl=_urlParams.get('uid');if(_uidFromUrl&&_uidFromUrl.length>5)_uzuCurrentUserId=_uidFromUrl;}catch(e){}
 try{var cookies=document.cookie.split(';');for(var ci=0;ci<cookies.length;ci++){var c=cookies[ci].trim(),eqIdx=c.indexOf('=');if(eqIdx===-1)continue;var cName=c.substring(0,eqIdx),cVal=c.substring(eqIdx+1);if(cName.indexOf('_u1_')!==-1&&cName.indexOf('main')!==-1&&cVal&&cVal.indexOf('x')!==-1){_uzuCurrentUserId=cVal;break;}}}catch(e){}
 window.bubble_fn_J2B_userId=function(val){_uzuCurrentUserId=val||'';};
 window.addEventListener('message',function(e){if(!e.data)return;if(e.data.type==='uzu_userid')_uzuCurrentUserId=e.data.userId||'';if(e.data.type==='uzu_setFiltros'){_uzuFiltros=e.data.filtros||{};fetchProperties();}});
