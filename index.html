@@ -180,7 +180,39 @@ function togglePill(el,tipo){var c=el.parentElement,was=el.classList.contains('a
 function toggleTamanho(el){var c=el.parentElement,was=el.classList.contains('active');c.querySelectorAll('.f-pill').forEach(function(p){p.classList.remove('active');});if(!was){el.classList.add('active');_filtrosPendentes.tamanhoMin=Number(el.dataset.min);_filtrosPendentes.tamanhoMax=Number(el.dataset.max);}else{delete _filtrosPendentes.tamanhoMin;delete _filtrosPendentes.tamanhoMax;}}
 function toggleCaract(el){el.classList.toggle('active');var sel=[];document.querySelectorAll('#pills-caract .f-pill.active').forEach(function(p){sel.push(p.dataset.val);});if(sel.length>0)_filtrosPendentes.caracteristicas=sel;else delete _filtrosPendentes.caracteristicas;}
 function changeCounter(tipo,delta){_counters[tipo]=Math.max(0,(_counters[tipo]||0)+delta);document.getElementById('val-'+tipo).textContent=_counters[tipo];if(_counters[tipo]>0)_filtrosPendentes[tipo]=_counters[tipo];else delete _filtrosPendentes[tipo];}
-function aplicarFiltros(){var pMin=document.getElementById('input-precoMin').value,pMax=document.getElementById('input-precoMax').value;if(pMin&&Number(pMin)>0)_filtrosPendentes.precoMin=Number(pMin);else delete _filtrosPendentes.precoMin;if(pMax&&Number(pMax)>0)_filtrosPendentes.precoMax=Number(pMax);else delete _filtrosPendentes.precoMax;_uzuFiltros=Object.assign({},_filtrosPendentes);fetchProperties();}
+function aplicarFiltros(){
+  var pMin=document.getElementById('input-precoMin').value,pMax=document.getElementById('input-precoMax').value;
+  if(pMin&&Number(pMin)>0)_filtrosPendentes.precoMin=Number(pMin);else delete _filtrosPendentes.precoMin;
+  if(pMax&&Number(pMax)>0)_filtrosPendentes.precoMax=Number(pMax);else delete _filtrosPendentes.precoMax;
+  _uzuFiltros=Object.assign({},_filtrosPendentes);
+  // Busca global para aplicar filtros em todo o mundo
+  if(fetchController)fetchController.abort();
+  fetchController=new AbortController();
+  fetch(buildUrl(-90,-180,90,180,''),{signal:fetchController.signal})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var result=parseGeoJSONResponse(data);
+      setGeoJSON({type:'FeatureCollection',features:result.features});
+      if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
+      try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
+      // Se só 1 resultado, navega para ele
+      if(result.features.length===1){
+        var f=result.features[0];
+        var coords=f.geometry.coordinates;
+        _uzuSkipNextMoveend=true;
+        map.flyTo({center:coords,zoom:14,essential:true});
+        setTimeout(function(){_uzuSkipNextMoveend=false;},1500);
+      } else if(result.features.length>1){
+        // Ajusta bounds para mostrar todos os resultados
+        var bounds=new mapboxgl.LngLatBounds();
+        result.features.forEach(function(f){bounds.extend(f.geometry.coordinates);});
+        _uzuSkipNextMoveend=true;
+        map.fitBounds(bounds,{padding:80,maxZoom:14,duration:800});
+        setTimeout(function(){_uzuSkipNextMoveend=false;},1500);
+      }
+    })
+    .catch(function(err){if(err&&err.name==='AbortError')return;});
+}
 function limparFiltros(){_filtrosPendentes={};_uzuFiltros={};_counters={quartos:0,casasBanho:0,vagas:0};['quartos','casasBanho','vagas'].forEach(function(k){document.getElementById('val-'+k).textContent='0';});document.querySelectorAll('.f-pill.active').forEach(function(p){p.classList.remove('active');});document.getElementById('input-precoMin').value='';document.getElementById('input-precoMax').value='';fetchProperties();}
 
 /* ── USER ────────────────────────────────────────────────────────────────── */
@@ -412,8 +444,19 @@ function iconHeart(){return'<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.
 function toggleFavorite(id,btnRef){
   if(!isLoggedIn()){showToast('\u2665 Faça login para guardar imóveis','warning');return;}
   var btn=btnRef||document.getElementById('uzu-heart-'+id),isFav=btn&&btn.classList.contains('favorited');
-  if(isFav){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);try{window.parent.postMessage({type:'uzu_desfavoritar',id:id},'*');}catch(e){}if(btn)btn.classList.remove('favorited');_uzuLocalFavs[id]=false;showToast('Removido dos favoritos','');}
-  else{_uzuLocalFavs[id]=true;if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);try{window.parent.postMessage({type:'uzu_favoritar',id:id},'*');}catch(e){}if(btn)btn.classList.add('favorited');showToast('\u2665 Guardado nos favoritos!','success');}
+  if(isFav){
+    _uzuLocalFavs[id]=false;
+    if(btn)btn.classList.remove('favorited');
+    showToast('Removido dos favoritos','');
+    try{window.parent.postMessage({type:'uzu_desfavoritar',id:id},'*');}catch(e){}
+    setTimeout(function(){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);},50);
+  }else{
+    _uzuLocalFavs[id]=true;
+    if(btn)btn.classList.add('favorited');
+    showToast('\u2665 Guardado nos favoritos!','success');
+    try{window.parent.postMessage({type:'uzu_favoritar',id:id},'*');}catch(e){}
+    setTimeout(function(){if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);},50);
+  }
 }
 
 /* ── POPUP ───────────────────────────────────────────────────────────────── */
