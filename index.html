@@ -186,7 +186,26 @@ function aplicarFiltros(){
   if(pMax&&Number(pMax)>0)_filtrosPendentes.precoMax=Number(pMax);else delete _filtrosPendentes.precoMax;
   _uzuFiltros=Object.assign({},_filtrosPendentes);
   if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
-  fetchProperties();
+  // Busca global e ajusta mapa para mostrar resultados
+  if(fetchController)fetchController.abort();
+  fetchController=new AbortController();
+  fetch(buildUrl(-90,-180,90,180,''),{signal:fetchController.signal})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var result=parseGeoJSONResponse(data);
+      setGeoJSON({type:'FeatureCollection',features:result.features});
+      if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
+      try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
+      // Ajusta mapa para mostrar todos os resultados
+      if(result.features.length>0){
+        var bounds=new mapboxgl.LngLatBounds();
+        result.features.forEach(function(f){bounds.extend(f.geometry.coordinates);});
+        _uzuSkipNextMoveend=true;
+        map.fitBounds(bounds,{padding:100,maxZoom:13,duration:800,essential:true});
+        setTimeout(function(){_uzuSkipNextMoveend=false;},2000);
+      }
+    })
+    .catch(function(err){if(err&&err.name==='AbortError')return;});
 }
 function limparFiltros(){_filtrosPendentes={};_uzuFiltros={};_counters={quartos:0,casasBanho:0,vagas:0};['quartos','casasBanho','vagas'].forEach(function(k){document.getElementById('val-'+k).textContent='0';});document.querySelectorAll('.f-pill.active').forEach(function(p){p.classList.remove('active');});document.getElementById('input-precoMin').value='';document.getElementById('input-precoMax').value='';fetchProperties();}
 
