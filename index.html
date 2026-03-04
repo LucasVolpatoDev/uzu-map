@@ -414,53 +414,50 @@ function uzuGeocode(query){
 }
 function uzuBuscar(){
   var inp=document.getElementById('uzu-search');
-  var q=(inp?inp.value:'').trim();
+  var q=(inp?inp.value:'').trim().toLowerCase();
   if(!q)return;
 
-  // Cancela qualquer geocoding em curso
   if(window._geoCtrl){window._geoCtrl.abort();window._geoCtrl=null;}
 
-  var constraints=[{key:'name_text',constraint_type:'contains',value:q}];
-  var url=API+'?limit=1&constraints='+encodeURIComponent(JSON.stringify(constraints));
-  var found=false;
+  // Bubble não suporta "contains" em texto — busca tudo e filtra no JS
+  var url=API+'?limit=100&constraints='+encodeURIComponent(JSON.stringify([
+    {key:'Publicado?',constraint_type:'equals',value:'true'}
+  ]));
 
-  console.log('[BUSCA] URL:', url);
   fetch(url)
-    .then(function(r){
-      console.log('[BUSCA] Status:', r.status);
-      return r.json();
-    })
+    .then(function(r){return r.json();})
     .then(function(data){
-      console.log('[BUSCA] Data:', JSON.stringify(data).substring(0,400));
       var results=(data&&data.response&&data.response.results)||[];
-      console.log('[BUSCA] Resultados:', results.length);
-      if(results.length===0){uzuGeocode(q);return;}
+      // Filtra pelo título no JS (case-insensitive)
+      var match=null;
+      for(var i=0;i<results.length;i++){
+        var titulo=(results[i]['Titulo']||results[i]['name_text']||'').toLowerCase();
+        if(titulo.indexOf(q)!==-1){match=results[i];break;}
+      }
+      if(!match){uzuGeocode(q);return;}
 
-      found=true;
-      var p=results[0];
-      var lat=Number(p['lat1_number']!=null?p['lat1_number']:p.lat);
-      var lng=Number(p['lng1_number']!=null?p['lng1_number']:p.lng);
+      var lat=Number(match['lat1_number']!=null?match['lat1_number']:match.lat);
+      var lng=Number(match['lng1_number']!=null?match['lng1_number']:match.lng);
 
       if(isFinite(lat)&&isFinite(lng)&&Math.abs(lat)>0.5&&Math.abs(lng)>0.5){
-        // Propriedade tem coordenadas — vai directo para o pin
         if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
         map.jumpTo({center:[lng,lat],zoom:15});
         openPopup(
-          p._id,[lng,lat],
-          Number(p['Valor UZU:']||0),
-          normalizeImg(p['cover_url']||''),
-          p['Titulo']||'',
-          p['Quartos']||0,
-          p['Casas Banho']||0,
-          p['Area Privativa']||0
+          match._id,[lng,lat],
+          Number(match['Valor UZU:']||0),
+          normalizeImg(match['cover_url']||''),
+          match['Titulo']||match['name_text']||'',
+          match['Quartos']||0,
+          match['Casas Banho']||0,
+          match['Area Privativa']||0
         );
       } else {
-        showToast('Propriedade "'+( p['Titulo']||q)+'" encontrada mas sem coordenadas no mapa','warning');
+        showToast('Propriedade encontrada mas sem localização no mapa','warning');
       }
     })
     .catch(function(err){
-      console.error('[UZU] Busca erro:',err);
-      if(!found)uzuGeocode(q);
+      console.error('[BUSCA] erro:',err);
+      uzuGeocode(q);
     });
 }
 
