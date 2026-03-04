@@ -445,7 +445,7 @@ function uzuBuscar(){
         openPopup(
           match._id,[lng,lat],
           Number(match['Valor UZU:']||0),
-          normalizeImg(match['cover_url']||''),
+          normalizeImageUrl(match['cover_url']||''),
           match['Titulo']||match['name_text']||'',
           match['Quartos']||0,
           match['Casas Banho']||0,
