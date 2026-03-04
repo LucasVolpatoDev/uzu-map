@@ -98,9 +98,12 @@
     <div class="f-section">
       <div class="f-label">Modalidade</div>
       <div class="f-pills">
-        <button class="f-pill" data-val="UZU Vitalicio" onclick="togglePill(this,'modalidade')">UZU Vitalício</button>
-        <button class="f-pill" data-val="UZU Plena" onclick="togglePill(this,'modalidade')">UZU Plena</button>
-        <button class="f-pill" data-val="UZU Prazo Determinado" onclick="togglePill(this,'modalidade')">UZU Prazo Determinado</button>
+        <button class="f-pill" data-val="Vitalício" onclick="togglePill(this,'modalidade')">Vitalício</button>
+        <button class="f-pill" data-val="Determinado" onclick="togglePill(this,'modalidade')">Determinado</button>
+        <button class="f-pill" data-val="Separação" onclick="togglePill(this,'modalidade')">Separação</button>
+        <button class="f-pill" data-val="à Medida" onclick="togglePill(this,'modalidade')">à Medida</button>
+        <button class="f-pill" data-val="Especial" onclick="togglePill(this,'modalidade')">Especial</button>
+        <button class="f-pill" data-val="Outro" onclick="togglePill(this,'modalidade')">Outro</button>
       </div>
     </div>
     <div class="f-divider"></div>
@@ -318,7 +321,7 @@ function buildConstraints(){
   if(_uzuFiltros.tipo)
     c.push({key:'OS Tipo Propriedade',constraint_type:'equals',value:_uzuFiltros.tipo});
   if(_uzuFiltros.modalidade)
-    c.push({key:'OS Modalidade',constraint_type:'contains',value:_uzuFiltros.modalidade});
+    c.push({key:'OS Modalidade',constraint_type:'equals',value:_uzuFiltros.modalidade});
   if(_uzuFiltros.precoMin)
     c.push({key:'Valor UZU:',constraint_type:'greater than',value:_uzuFiltros.precoMin-1});
   if(_uzuFiltros.precoMax)
