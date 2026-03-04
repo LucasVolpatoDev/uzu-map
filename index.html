@@ -10,7 +10,7 @@
   html { margin: 0; padding: 0; width: 100%; height: 100%; }
   body { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
   #uzu-root { position: relative; width: 100%; height: 100%; overflow: hidden; }
-  #uzu-map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%;  }
+  #uzu-map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
   #map-controls { position: absolute; top: 12px; left: 12px; z-index: 20; display: flex; flex-direction: column; gap: 8px; }
   #btn-toggle-filtros { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 8px; padding: 10px 22px; background: #2563eb; color: #fff; border: none; border-radius: 999px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 16px rgba(37,99,235,0.4); transition: background 0.2s; white-space: nowrap; }
   #btn-toggle-filtros:hover { background: #1d4ed8; }
@@ -66,11 +66,11 @@
   <div id="map-controls">
     <div style="display:flex;gap:6px;">
       <button id="btn-mapa" onclick="uzuSetStyle('mapa')" style="padding:7px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;background:#1a1a2e;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.18);">Mapa</button>
-      <button id="btn-satelite" onclick="uzuSetStyle('satelite')" style="padding:7px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;background:#fff;color:#333;box-shadow:0 2px 8px rgba(0,0,0,0.18);">Satélite</button>
+      <button id="btn-satelite" onclick="uzuSetStyle('satelite')" style="padding:7px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;font-weight:600;background:#fff;color:#333;box-shadow:0 2px 8px rgba(0,0,0,0.18);">Sat&#233;lite</button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;background:#fff;border-radius:6px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.18);border:1.5px solid #e5e7eb;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="uzu-search" type="text" placeholder="Bairro, cidade, município..." style="width:392px;border:none;outline:none;font-size:13px;font-family:'Inter',sans-serif;background:transparent;color:#1E40AF;" onkeydown="if(event.key==='Enter')uzuBuscar()" />
+      <input id="uzu-search" type="text" placeholder="Bairro, cidade, munic&#237;pio..." style="width:392px;border:none;outline:none;font-size:13px;font-family:'Inter',sans-serif;background:transparent;color:#1E40AF;" onkeydown="if(event.key==='Enter')uzuBuscar()" />
     </div>
   </div>
 
@@ -105,16 +105,16 @@
     </div>
     <div class="f-divider"></div>
     <div class="f-section">
-      <div class="f-label">Faixa de Preço</div>
+      <div class="f-label">Faixa de Pre&#231;o</div>
       <div class="f-range-row">
         <div class="f-range-col">
-          <div class="f-range-sublabel">Mínimo</div>
-          <input class="f-range-input" id="input-precoMin" type="number" placeholder="200000" min="0" />
+          <div class="f-range-sublabel">M&#237;nimo</div>
+          <input class="f-range-input" id="input-precoMin" type="number" placeholder="0" min="0" />
         </div>
-        <span class="f-range-sep">—</span>
+        <span class="f-range-sep">&#8212;</span>
         <div class="f-range-col">
-          <div class="f-range-sublabel">Máximo</div>
-          <input class="f-range-input" id="input-precoMax" type="number" placeholder="4000000" min="0" />
+          <div class="f-range-sublabel">M&#225;ximo</div>
+          <input class="f-range-input" id="input-precoMax" type="number" placeholder="Sem limite" min="0" />
         </div>
       </div>
     </div>
@@ -122,17 +122,17 @@
     <div class="f-section">
       <div class="f-label">Tamanho</div>
       <div class="f-pills">
-        <button class="f-pill" data-min="0" data-max="100" onclick="toggleTamanho(this)">Até 100 m²</button>
-        <button class="f-pill" data-min="100" data-max="200" onclick="toggleTamanho(this)">100-200 m²</button>
-        <button class="f-pill" data-min="200" data-max="300" onclick="toggleTamanho(this)">200-300 m²</button>
-        <button class="f-pill" data-min="300" data-max="999999" onclick="toggleTamanho(this)">300+ m²</button>
+        <button class="f-pill" data-min="0" data-max="100" onclick="toggleTamanho(this)">At&#233; 100 m&#178;</button>
+        <button class="f-pill" data-min="100" data-max="200" onclick="toggleTamanho(this)">100-200 m&#178;</button>
+        <button class="f-pill" data-min="200" data-max="300" onclick="toggleTamanho(this)">200-300 m&#178;</button>
+        <button class="f-pill" data-min="300" data-max="999999" onclick="toggleTamanho(this)">300+ m&#178;</button>
       </div>
     </div>
     <div class="f-divider"></div>
     <div class="f-section">
       <div class="f-label">Quartos</div>
       <div class="f-counter-wrap">
-        <button class="f-counter-btn" onclick="changeCounter('quartos',-1)">−</button>
+        <button class="f-counter-btn" onclick="changeCounter('quartos',-1)">&#8722;</button>
         <span class="f-counter-val" id="val-quartos">0</span>
         <button class="f-counter-btn" onclick="changeCounter('quartos',1)">+</button>
       </div>
@@ -140,7 +140,7 @@
     <div class="f-section">
       <div class="f-label">Casas de Banho</div>
       <div class="f-counter-wrap">
-        <button class="f-counter-btn" onclick="changeCounter('casasBanho',-1)">−</button>
+        <button class="f-counter-btn" onclick="changeCounter('casasBanho',-1)">&#8722;</button>
         <span class="f-counter-val" id="val-casasBanho">0</span>
         <button class="f-counter-btn" onclick="changeCounter('casasBanho',1)">+</button>
       </div>
@@ -148,14 +148,14 @@
     <div class="f-section">
       <div class="f-label">Vagas de Garagem</div>
       <div class="f-counter-wrap">
-        <button class="f-counter-btn" onclick="changeCounter('vagas',-1)">−</button>
+        <button class="f-counter-btn" onclick="changeCounter('vagas',-1)">&#8722;</button>
         <span class="f-counter-val" id="val-vagas">0</span>
         <button class="f-counter-btn" onclick="changeCounter('vagas',1)">+</button>
       </div>
     </div>
     <div class="f-divider"></div>
     <div class="f-section">
-      <div class="f-label">Características</div>
+      <div class="f-label">Caracter&#237;sticas</div>
       <div class="f-pills" id="pills-caract">
         <button class="f-pill" data-val="Mobilado" onclick="toggleCaract(this)">Mobilado</button>
         <button class="f-pill" data-val="Varanda" onclick="toggleCaract(this)">Varanda</button>
@@ -173,61 +173,96 @@
 </div>
 
 <script>
-/* ── FILTROS ─────────────────────────────────────────────────────────────── */
+/* ── GLOBALS ─────────────────────────────────────────────────────────────── */
 var _filtrosOpen=false,_counters={quartos:0,casasBanho:0,vagas:0},_filtrosPendentes={};
-function toggleFiltros(){_filtrosOpen=!_filtrosOpen;var p=document.getElementById('uzu-filtros-panel'),b=document.getElementById('btn-toggle-filtros'),l=document.getElementById('btn-label');if(_filtrosOpen){p.classList.add('open');b.classList.add('open');l.textContent='Ocultar Filtros';}else{p.classList.remove('open');b.classList.remove('open');l.textContent='Mostrar Filtros';}}
-function togglePill(el,tipo){var c=el.parentElement,was=el.classList.contains('active');c.querySelectorAll('.f-pill').forEach(function(p){p.classList.remove('active');});if(!was){el.classList.add('active');_filtrosPendentes[tipo]=el.dataset.val;}else delete _filtrosPendentes[tipo];}
-function toggleTamanho(el){var c=el.parentElement,was=el.classList.contains('active');c.querySelectorAll('.f-pill').forEach(function(p){p.classList.remove('active');});if(!was){el.classList.add('active');_filtrosPendentes.tamanhoMin=Number(el.dataset.min);_filtrosPendentes.tamanhoMax=Number(el.dataset.max);}else{delete _filtrosPendentes.tamanhoMin;delete _filtrosPendentes.tamanhoMax;}}
-function toggleCaract(el){el.classList.toggle('active');var sel=[];document.querySelectorAll('#pills-caract .f-pill.active').forEach(function(p){sel.push(p.dataset.val);});if(sel.length>0)_filtrosPendentes.caracteristicas=sel;else delete _filtrosPendentes.caracteristicas;}
-function changeCounter(tipo,delta){_counters[tipo]=Math.max(0,(_counters[tipo]||0)+delta);document.getElementById('val-'+tipo).textContent=_counters[tipo];if(_counters[tipo]>0)_filtrosPendentes[tipo]=_counters[tipo];else delete _filtrosPendentes[tipo];}
+var _uzuCurrentUserId='',_uzuLocalFavs={},_uzuFiltros={},_uzuSkipNextMoveend=false;
+var fetchController=null,_fetchSeq=0;
 
-/* ── APLICAR FILTROS: apenas atualiza dados, SEM mover o mapa ────────────── */
+/* ── FILTROS UI ──────────────────────────────────────────────────────────── */
+function toggleFiltros(){
+  _filtrosOpen=!_filtrosOpen;
+  var p=document.getElementById('uzu-filtros-panel'),b=document.getElementById('btn-toggle-filtros'),l=document.getElementById('btn-label');
+  if(_filtrosOpen){p.classList.add('open');b.classList.add('open');l.textContent='Ocultar Filtros';}
+  else{p.classList.remove('open');b.classList.remove('open');l.textContent='Mostrar Filtros';}
+}
+function togglePill(el,tipo){
+  var c=el.parentElement,was=el.classList.contains('active');
+  c.querySelectorAll('.f-pill').forEach(function(p){p.classList.remove('active');});
+  if(!was){el.classList.add('active');_filtrosPendentes[tipo]=el.dataset.val;}else delete _filtrosPendentes[tipo];
+}
+function toggleTamanho(el){
+  var c=el.parentElement,was=el.classList.contains('active');
+  c.querySelectorAll('.f-pill').forEach(function(p){p.classList.remove('active');});
+  if(!was){el.classList.add('active');_filtrosPendentes.tamanhoMin=Number(el.dataset.min);_filtrosPendentes.tamanhoMax=Number(el.dataset.max);}
+  else{delete _filtrosPendentes.tamanhoMin;delete _filtrosPendentes.tamanhoMax;}
+}
+function toggleCaract(el){
+  el.classList.toggle('active');
+  var sel=[];document.querySelectorAll('#pills-caract .f-pill.active').forEach(function(p){sel.push(p.dataset.val);});
+  if(sel.length>0)_filtrosPendentes.caracteristicas=sel;else delete _filtrosPendentes.caracteristicas;
+}
+function changeCounter(tipo,delta){
+  _counters[tipo]=Math.max(0,(_counters[tipo]||0)+delta);
+  document.getElementById('val-'+tipo).textContent=_counters[tipo];
+  if(_counters[tipo]>0)_filtrosPendentes[tipo]=_counters[tipo];else delete _filtrosPendentes[tipo];
+}
+
+/* ── APLICAR / LIMPAR ────────────────────────────────────────────────────── */
 function aplicarFiltros(){
   var pMin=document.getElementById('input-precoMin').value;
   var pMax=document.getElementById('input-precoMax').value;
-  if(pMin&&Number(pMin)>0) _filtrosPendentes.precoMin=Number(pMin); else delete _filtrosPendentes.precoMin;
-  if(pMax&&Number(pMax)>0) _filtrosPendentes.precoMax=Number(pMax); else delete _filtrosPendentes.precoMax;
-
-  // Fecha popup aberto se houver
+  if(pMin&&Number(pMin)>0)_filtrosPendentes.precoMin=Number(pMin);else delete _filtrosPendentes.precoMin;
+  if(pMax&&Number(pMax)>0)_filtrosPendentes.precoMax=Number(pMax);else delete _filtrosPendentes.precoMax;
   if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
-
-  // Aplica filtros e faz refresh dos pins/clusters sem mover o mapa
   _uzuFiltros=Object.assign({},_filtrosPendentes);
   fetchProperties();
 }
-
-function limparFiltros(){_filtrosPendentes={};_uzuFiltros={};_counters={quartos:0,casasBanho:0,vagas:0};['quartos','casasBanho','vagas'].forEach(function(k){document.getElementById('val-'+k).textContent='0';});document.querySelectorAll('.f-pill.active').forEach(function(p){p.classList.remove('active');});document.getElementById('input-precoMin').value='';document.getElementById('input-precoMax').value='';fetchProperties();}
+function limparFiltros(){
+  _filtrosPendentes={};_uzuFiltros={};_counters={quartos:0,casasBanho:0,vagas:0};
+  ['quartos','casasBanho','vagas'].forEach(function(k){document.getElementById('val-'+k).textContent='0';});
+  document.querySelectorAll('.f-pill.active').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('input-precoMin').value='';document.getElementById('input-precoMax').value='';
+  fetchProperties();
+}
 
 /* ── USER ────────────────────────────────────────────────────────────────── */
-var _uzuCurrentUserId='';
-var _uzuLocalFavs={};
-try{var _urlParams=new URLSearchParams(window.location.search);var _uidFromUrl=_urlParams.get('uid');if(_uidFromUrl&&_uidFromUrl.length>5)_uzuCurrentUserId=_uidFromUrl;}catch(e){}
-try{var cookies=document.cookie.split(';');for(var ci=0;ci<cookies.length;ci++){var c=cookies[ci].trim(),eqIdx=c.indexOf('=');if(eqIdx===-1)continue;var cName=c.substring(0,eqIdx),cVal=c.substring(eqIdx+1);if(cName.indexOf('_u1_')!==-1&&cName.indexOf('main')!==-1&&cVal&&cVal.indexOf('x')!==-1){_uzuCurrentUserId=cVal;break;}}}catch(e){}
-window.bubble_fn_J2B_userId=function(val){_uzuCurrentUserId=val||'';};
+try{var _up=new URLSearchParams(window.location.search);var _uid=_up.get('uid');if(_uid&&_uid.length>5)_uzuCurrentUserId=_uid;}catch(e){}
+try{var _ck=document.cookie.split(';');for(var _ci=0;_ci<_ck.length;_ci++){var _c=_ck[_ci].trim(),_eq=_c.indexOf('=');if(_eq===-1)continue;var _cn=_c.substring(0,_eq),_cv=_c.substring(_eq+1);if(_cn.indexOf('_u1_')!==-1&&_cn.indexOf('main')!==-1&&_cv&&_cv.indexOf('x')!==-1){_uzuCurrentUserId=_cv;break;}}}catch(e){}
+window.bubble_fn_J2B_userId=function(v){_uzuCurrentUserId=v||'';};
 window.addEventListener('message',function(e){
-  if(e.data&&e.data.type==='uzu_userid'&&e.data.userId){_uzuCurrentUserId=e.data.userId;return;}if(!e.data)return;if(e.data.type==='uzu_userid')_uzuCurrentUserId=e.data.userId||'';if(e.data.type==='uzu_setFiltros'){_uzuFiltros=e.data.filtros||{};fetchProperties();}});
+  if(!e.data)return;
+  if(e.data.type==='uzu_userid'){_uzuCurrentUserId=e.data.userId||'';return;}
+  if(e.data.type==='uzu_setFiltros'){_uzuFiltros=e.data.filtros||{};fetchProperties();}
+});
+function isLoggedIn(){return !!(_uzuCurrentUserId&&_uzuCurrentUserId!==''&&_uzuCurrentUserId.indexOf('[[')===-1);}
 
 /* ── TOAST ───────────────────────────────────────────────────────────────── */
-function showToast(msg,type){var t=document.getElementById('uzu-toast');if(!t)return;t.textContent=msg;t.className='uzu-toast '+(type||'');void t.offsetWidth;t.classList.add('show');clearTimeout(window._uzuToastTimer);window._uzuToastTimer=setTimeout(function(){t.classList.remove('show');},2500);}
-function isLoggedIn(){return !!(_uzuCurrentUserId&&_uzuCurrentUserId!==''&&_uzuCurrentUserId.indexOf('[[')===-1);}
+function showToast(msg,type){
+  var t=document.getElementById('uzu-toast');if(!t)return;
+  t.textContent=msg;t.className='uzu-toast '+(type||'');void t.offsetWidth;t.classList.add('show');
+  clearTimeout(window._toastT);window._toastT=setTimeout(function(){t.classList.remove('show');},2500);
+}
 
 /* ── MAPA STYLE ──────────────────────────────────────────────────────────── */
 var _uzuCurrentStyle='mapa';
-function uzuSetStyle(style){if(_uzuCurrentStyle===style)return;_uzuCurrentStyle=style;var styles={'mapa':'mapbox://styles/mapbox/outdoors-v12','satelite':'mapbox://styles/mapbox/satellite-streets-v12'};var bM=document.getElementById('btn-mapa'),bS=document.getElementById('btn-satelite');if(style==='mapa'){bM.style.background='#1a1a2e';bM.style.color='#fff';bS.style.background='#fff';bS.style.color='#333';}else{bS.style.background='#1a1a2e';bS.style.color='#fff';bM.style.background='#fff';bM.style.color='#333';}map.off('style.load',_uzuOnStyleLoad);map.once('style.load',_uzuOnStyleLoad);map.setStyle(styles[style]);}
+function uzuSetStyle(style){
+  if(_uzuCurrentStyle===style)return;_uzuCurrentStyle=style;
+  var styles={mapa:'mapbox://styles/mapbox/outdoors-v12',satelite:'mapbox://styles/mapbox/satellite-streets-v12'};
+  var bM=document.getElementById('btn-mapa'),bS=document.getElementById('btn-satelite');
+  if(style==='mapa'){bM.style.background='#1a1a2e';bM.style.color='#fff';bS.style.background='#fff';bS.style.color='#333';}
+  else{bS.style.background='#1a1a2e';bS.style.color='#fff';bM.style.background='#fff';bM.style.color='#333';}
+  map.off('style.load',_uzuOnStyleLoad);map.once('style.load',_uzuOnStyleLoad);map.setStyle(styles[style]);
+}
 function _uzuOnStyleLoad(){ensureSourceAndLayers();fetchProperties();}
 
-/* ── MAPBOX INIT ─────────────────────────────────────────────────────────── */
+/* ── MAPBOX ──────────────────────────────────────────────────────────────── */
 mapboxgl.accessToken='pk.eyJ1IjoidXp1aG9tZSIsImEiOiJjbWtneHM0OGQwYTd5M2ZxeWQ3bGYxd2hsIn0.SeMnhsNY8QGyDDdfA_n-0A';
 var map=new mapboxgl.Map({container:'uzu-map',style:'mapbox://styles/mapbox/outdoors-v12',center:[-8.0,39.5],zoom:6});
 window._uzuMap=map;
-var fetchController=null,_selectedPropertyId='',_uzuFiltros={},_uzuSkipNextMoveend=false;
 
-function debounce(fn,delay){var timer;return function(){var args=arguments,ctx=this;clearTimeout(timer);timer=setTimeout(function(){fn.apply(ctx,args);},delay);};}
-
-/* ── NORMALIZA URL BUBBLE ────────────────────────────────────────────────── */
+function debounce(fn,d){var t;return function(){var a=arguments,c=this;clearTimeout(t);t=setTimeout(function(){fn.apply(c,a);},d);};}
 function normalizeImageUrl(u){
-  if(!u)return'';
-  u=String(u).trim();
+  if(!u)return'';u=String(u).trim();
   if(u.startsWith('http://')||u.startsWith('https://'))return u;
   if(u.startsWith('//'))return'https:'+u;
   return'https://510a37fb0cd15334d1f7fc33af15451c.cdn.bubble.io/'+u;
@@ -242,17 +277,12 @@ function ensureSourceAndLayers(){
   map.addLayer({id:'unclustered-bg',type:'circle',source:'properties',filter:['!',['has','point_count']],paint:{'circle-color':'#ffffff','circle-radius':22,'circle-stroke-width':1.5,'circle-stroke-color':'#cccccc'}});
   map.addLayer({id:'unclustered-point',type:'symbol',source:'properties',filter:['!',['has','point_count']],layout:{'text-field':['concat','\u20ac',['to-string',['coalesce',['get','price'],0]]],'text-size':12,'text-font':['DIN Offc Pro Medium','Arial Unicode MS Bold']},paint:{'text-color':'#1a1a2e'}});
 }
-function setGeoJSON(g){
+
+/* ── SET DATA: direto, sem hacks ─────────────────────────────────────────── */
+function setGeoJSON(features){
   ensureSourceAndLayers();
   var src=map.getSource('properties');
-  if(!src)return;
-  src.setData(g);
-  // Força re-render dos clusters após atualização dos dados
-  map.once('sourcedata',function(e){
-    if(e.sourceId==='properties'&&e.isSourceLoaded){
-      map.triggerRepaint();
-    }
-  });
+  if(src)src.setData({type:'FeatureCollection',features:features||[]});
 }
 
 /* ── BUILD URL ───────────────────────────────────────────────────────────── */
@@ -265,8 +295,8 @@ function buildUrl(swLat,swLng,neLat,neLng,query){
   if(_uzuFiltros.modalidade)url+='&modalidade='+encodeURIComponent(_uzuFiltros.modalidade);
   if(_uzuFiltros.precoMin)url+='&precoMin='+encodeURIComponent(_uzuFiltros.precoMin);
   if(_uzuFiltros.precoMax)url+='&precoMax='+encodeURIComponent(_uzuFiltros.precoMax);
-  if(_uzuFiltros.tamanhoMin)url+='&tamanhoMin='+encodeURIComponent(_uzuFiltros.tamanhoMin);
-  if(_uzuFiltros.tamanhoMax)url+='&tamanhoMax='+encodeURIComponent(_uzuFiltros.tamanhoMax);
+  if(_uzuFiltros.tamanhoMin!=null)url+='&tamanhoMin='+encodeURIComponent(_uzuFiltros.tamanhoMin);
+  if(_uzuFiltros.tamanhoMax!=null)url+='&tamanhoMax='+encodeURIComponent(_uzuFiltros.tamanhoMax);
   if(_uzuFiltros.quartos)url+='&quartos='+encodeURIComponent(_uzuFiltros.quartos);
   if(_uzuFiltros.casasBanho)url+='&casasBanho='+encodeURIComponent(_uzuFiltros.casasBanho);
   if(_uzuFiltros.vagas)url+='&vagas='+encodeURIComponent(_uzuFiltros.vagas);
@@ -274,29 +304,21 @@ function buildUrl(swLat,swLng,neLat,neLng,query){
   return url;
 }
 
-/* ── PARSE GEOJSON ───────────────────────────────────────────────────────── */
-function parseGeoJSONResponse(data){
-  var r=data&&data.response?data.response:null;
-  if(!r)return{features:[]};
-  var ids=Array.isArray(r.ids)?r.ids:[],
-      lats=Array.isArray(r.lats)?r.lats:[],
-      lngs=Array.isArray(r.lngs)?r.lngs:[],
-      prices=Array.isArray(r.prices)?r.prices:[],
-      imageUrls=Array.isArray(r.image_urls)?r.image_urls:[];
-  return{features:ids.map(function(id,i){
-    var lat=Number(lats[i]),lng=Number(lngs[i]),
-        price=Number(prices[i]!=null?prices[i]:0),
-        imgUrl=imageUrls[i]||'';
-    return{type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},
-           properties:{id:id,price:isFinite(price)?price:0,imgUrl:imgUrl}};
-  }).filter(function(f){var c=f.geometry.coordinates;return isFinite(c[0])&&isFinite(c[1]);})};
+/* ── PARSE ───────────────────────────────────────────────────────────────── */
+function parseResponse(data){
+  var r=data&&data.response?data.response:null;if(!r)return[];
+  var ids=Array.isArray(r.ids)?r.ids:[],lats=Array.isArray(r.lats)?r.lats:[],lngs=Array.isArray(r.lngs)?r.lngs:[],
+      prices=Array.isArray(r.prices)?r.prices:[],imgs=Array.isArray(r.image_urls)?r.image_urls:[];
+  return ids.map(function(id,i){
+    var lat=Number(lats[i]),lng=Number(lngs[i]),price=Number(prices[i]!=null?prices[i]:0);
+    return{type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},properties:{id:id,price:isFinite(price)?price:0,imgUrl:imgs[i]||''}};
+  }).filter(function(f){var c=f.geometry.coordinates;return isFinite(c[0])&&isFinite(c[1])&&(c[0]!==0||c[1]!==0);});
 }
 
 /* ── FETCH PROPERTIES ────────────────────────────────────────────────────── */
 function fetchProperties(){
   var bounds=map.getBounds();
   var hasFilters=Object.keys(_uzuFiltros).length>0;
-  // Com filtros ativos, busca global para não perder props fora do viewport
   var swLat=hasFilters?-90:bounds.getSouthWest().lat;
   var swLng=hasFilters?-180:bounds.getSouthWest().lng;
   var neLat=hasFilters?90:bounds.getNorthEast().lat;
@@ -307,118 +329,75 @@ function fetchProperties(){
   if(window.bubble_fn_J2B_neLng)window.bubble_fn_J2B_neLng(neLng);
   if(fetchController)fetchController.abort();
   fetchController=new AbortController();
+  var seq=++_fetchSeq;
   fetch(buildUrl(swLat,swLng,neLat,neLng,''),{signal:fetchController.signal})
     .then(function(r){return r.json();})
     .then(function(data){
-      var result=parseGeoJSONResponse(data);
-      // Limpa dados primeiro para forçar re-render limpo dos clusters
-      var src=map.getSource('properties');
-      if(src){
-        src.setData({type:'FeatureCollection',features:[]});
-        setTimeout(function(){
-          src.setData({type:'FeatureCollection',features:result.features});
-          map.triggerRepaint();
-          if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
-          try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
-        },30);
-      }
+      if(seq!==_fetchSeq)return; // resposta stale, ignora
+      var features=parseResponse(data);
+      setGeoJSON(features);
+      if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(features.length);
+      try{window.parent.postMessage({type:'uzu_total',value:features.length},'*');}catch(e){}
     })
     .catch(function(err){if(err&&err.name==='AbortError')return;console.error(err);});
 }
 
 /* ── GEOCODING ───────────────────────────────────────────────────────────── */
-var _geocodeController=null;
+var _geocodeCtrl=null;
 function uzuGeocode(query){
-  query=(query||'').trim();
-  if(!query)return;
-  if(_geocodeController)_geocodeController.abort();
-  _geocodeController=new AbortController();
-  var url='https://api.mapbox.com/geocoding/v5/mapbox.places/'+encodeURIComponent(query)+'.json'
-    +'?access_token='+mapboxgl.accessToken
-    +'&limit=1&language=pt,en'
-    +'&types=country,region,place,locality,neighborhood,district,poi';
-  fetch(url,{signal:_geocodeController.signal})
+  if(!query)return;if(_geocodeCtrl)_geocodeCtrl.abort();_geocodeCtrl=new AbortController();
+  fetch('https://api.mapbox.com/geocoding/v5/mapbox.places/'+encodeURIComponent(query)+'.json?access_token='+mapboxgl.accessToken+'&limit=1&language=pt,en&types=country,region,place,locality,neighborhood,district,poi',{signal:_geocodeCtrl.signal})
     .then(function(r){return r.json();})
     .then(function(data){
-      var f=data&&data.features&&data.features[0]?data.features[0]:null;
-      if(!f){showToast('Local nao encontrado','warning');return;}
+      var f=data&&data.features&&data.features[0];if(!f){showToast('Local n\u00e3o encontrado','warning');return;}
       _uzuSkipNextMoveend=true;
-      if(f.bbox&&f.bbox.length===4){
-        map.fitBounds([[f.bbox[0],f.bbox[1]],[f.bbox[2],f.bbox[3]]],{padding:60,duration:1000});
-      }else{
-        map.flyTo({center:f.center,zoom:10,essential:true});
-      }
+      if(f.bbox&&f.bbox.length===4)map.fitBounds([[f.bbox[0],f.bbox[1]],[f.bbox[2],f.bbox[3]]],{padding:60,duration:1000});
+      else map.flyTo({center:f.center,zoom:10,essential:true});
       showToast('A mostrar: '+(f.place_name_pt||f.place_name||query),'success');
       setTimeout(function(){_uzuSkipNextMoveend=false;},1500);
     })
-    .catch(function(err){
-      if(err&&err.name==='AbortError')return;
-      showToast('Local nao encontrado','warning');
-    });
+    .catch(function(err){if(err&&err.name==='AbortError')return;showToast('Local n\u00e3o encontrado','warning');});
 }
 
-/* ── BUSCA PRINCIPAL ─────────────────────────────────────────────────────── */
-var _searchController=null;
+/* ── BUSCA ───────────────────────────────────────────────────────────────── */
+var _searchCtrl=null;
 function uzuBuscar(){
-  var input=document.getElementById('uzu-search');
-  var query=(input?input.value:'').trim();
+  var input=document.getElementById('uzu-search'),query=(input?input.value:'').trim();
   if(!query){fetchProperties();return;}
-  if(_searchController)_searchController.abort();
-  _searchController=new AbortController();
-  var signal=_searchController.signal;
-  fetch(buildUrl(-90,-180,90,180,query),{signal:signal})
+  if(_searchCtrl)_searchCtrl.abort();_searchCtrl=new AbortController();var sig=_searchCtrl.signal;
+  fetch(buildUrl(-90,-180,90,180,query),{signal:sig})
     .then(function(r){return r.json();})
     .then(function(data){
-      if(signal.aborted)return;
-      var result=parseGeoJSONResponse(data);
-      var features=result.features;
-      if(!features||features.length===0){uzuGeocode(query);return;}
-      var queryLow=query.toLowerCase().trim();
-      var pending=features.length,bestFeature=null,bestScore=0,resultsMap={};
+      if(sig.aborted)return;
+      var features=parseResponse(data);
+      if(!features.length){uzuGeocode(query);return;}
+      var qLow=query.toLowerCase().trim(),pending=features.length,best=null,bestScore=0,rMap={};
       features.forEach(function(f){
         fetch('https://www.uzuhome.com/version-734wl/api/1.1/obj/propriedades/'+f.properties.id)
           .then(function(r){return r.json();})
           .then(function(d){
-            if(signal.aborted)return;
-            var p=d&&d.response?d.response:null;
-            if(p){
-              resultsMap[f.properties.id]=p;
-              var titulo=(p['Titulo']||p['ai_titulo']||'').toLowerCase().trim();
-              var score=0;
-              if(titulo&&titulo===queryLow) score=3;
-              else if(titulo&&titulo.indexOf(queryLow)!==-1) score=2;
-              else if(titulo&&titulo.length>2&&queryLow.indexOf(titulo)!==-1) score=1;
-              if(score>bestScore){bestScore=score;bestFeature=f;}
-            }
-          })
-          .catch(function(){})
-          .then(function(){
-            if(signal.aborted)return;
-            pending--;
+            if(sig.aborted)return;var p=d&&d.response?d.response:null;
+            if(p){rMap[f.properties.id]=p;var t=(p['Titulo']||p['ai_titulo']||'').toLowerCase().trim();
+              var s=0;if(t===qLow)s=3;else if(t.indexOf(qLow)!==-1)s=2;else if(t.length>2&&qLow.indexOf(t)!==-1)s=1;
+              if(s>bestScore){bestScore=s;best=f;}}
+          }).catch(function(){}).then(function(){
+            if(sig.aborted)return;pending--;
             if(pending===0){
-              if(bestScore>0&&bestFeature){
-                var p=resultsMap[bestFeature.properties.id];
-                var tLng=p&&isFinite(Number(p.lng))?Number(p.lng):bestFeature.geometry.coordinates[0];
-                var tLat=p&&isFinite(Number(p.lat))?Number(p.lat):bestFeature.geometry.coordinates[1];
+              if(bestScore>0&&best){
+                var p=rMap[best.properties.id];
+                var lng=p&&isFinite(Number(p.lng))?Number(p.lng):best.geometry.coordinates[0];
+                var lat=p&&isFinite(Number(p.lat))?Number(p.lat):best.geometry.coordinates[1];
                 _uzuSkipNextMoveend=true;
-                map.flyTo({center:[tLng,tLat],zoom:15,essential:true});
+                map.flyTo({center:[lng,lat],zoom:15,essential:true});
                 map.once('idle',function(){
-                  openPopup(
-                    bestFeature.properties.id,
-                    [tLng,tLat],
-                    p?Number(p['Valor UZU:']||0):Number(bestFeature.properties.price||0),
-                    normalizeImageUrl(bestFeature.properties.imgUrl||'')
-                  );
+                  openPopup(best.properties.id,[lng,lat],p?Number(p['Valor UZU:']||0):Number(best.properties.price||0),normalizeImageUrl(best.properties.imgUrl||''));
                   setTimeout(function(){_uzuSkipNextMoveend=false;},1000);
                 });
-              } else {
-                uzuGeocode(query);
-              }
+              }else uzuGeocode(query);
             }
           });
       });
-    })
-    .catch(function(err){if(err&&err.name==='AbortError')return;console.error(err);});
+    }).catch(function(err){if(err&&err.name==='AbortError')return;});
 }
 
 /* ── ICONS ───────────────────────────────────────────────────────────────── */
@@ -428,35 +407,25 @@ function iconArea(){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentC
 function iconHeart(){return'<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>';}
 
 /* ── FAVORITO ────────────────────────────────────────────────────────────── */
-function toggleFavorite(id,btnRef){
-  if(!isLoggedIn()){showToast('\u2665 Faça login para guardar imóveis','warning');return;}
-  var btn=btnRef||document.getElementById('uzu-heart-'+id),isFav=btn&&btn.classList.contains('favorited');
-  if(isFav){
-    _uzuLocalFavs[id]=false;
-    if(btn)btn.classList.remove('favorited');
-    showToast('Removido dos favoritos','');
-    try{window.parent.postMessage({type:'uzu_desfavoritar',id:id},'*');}catch(e){}
-    setTimeout(function(){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);},50);
-  }else{
-    _uzuLocalFavs[id]=true;
-    if(btn)btn.classList.add('favorited');
-    showToast('\u2665 Guardado nos favoritos!','success');
-    try{window.parent.postMessage({type:'uzu_favoritar',id:id},'*');}catch(e){}
-    setTimeout(function(){if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);},50);
-  }
+function toggleFavorite(id,btn){
+  if(!isLoggedIn()){showToast('\u2665 Fa\u00e7a login para guardar im\u00f3veis','warning');return;}
+  var isFav=btn&&btn.classList.contains('favorited');
+  if(isFav){_uzuLocalFavs[id]=false;if(btn)btn.classList.remove('favorited');showToast('Removido dos favoritos','');try{window.parent.postMessage({type:'uzu_desfavoritar',id:id},'*');}catch(e){}setTimeout(function(){if(window.bubble_fn_J2B_desfavoritar)window.bubble_fn_J2B_desfavoritar(id);},50);}
+  else{_uzuLocalFavs[id]=true;if(btn)btn.classList.add('favorited');showToast('\u2665 Guardado nos favoritos!','success');try{window.parent.postMessage({type:'uzu_favoritar',id:id},'*');}catch(e){}setTimeout(function(){if(window.bubble_fn_J2B_favoritar)window.bubble_fn_J2B_favoritar(id);},50);}
 }
 
 /* ── POPUP ───────────────────────────────────────────────────────────────── */
-function openPopup(id,coords,price,imgFromFeature){
-  imgFromFeature=imgFromFeature||'';
-  if(window.bubble_fn_J2B_markerClicked)window.bubble_fn_J2B_markerClicked(id);try{window.parent.postMessage({type:'uzu_markerClicked',id:id},'*');}catch(e){}
-  _selectedPropertyId=id;setTimeout(function(){_selectedPropertyId='';},0);
+function openPopup(id,coords,price,img){
+  img=img||'';
+  // Notifica Bubble
+  if(window.bubble_fn_J2B_markerClicked)window.bubble_fn_J2B_markerClicked(id);
+  try{window.parent.postMessage({type:'uzu_markerClicked',id:id},'*');}catch(e){}
+  // Remove popup anterior
   if(window._uzuPopup)window._uzuPopup.remove();
   var imgId='uzu-img-'+id,priceStr='\u20ac'+(isFinite(price)?price:0).toLocaleString('pt-PT');
-  var html=''
-    +'<div style="position:relative;">'
+  var html='<div style="position:relative;">'
     +'<div style="width:100%;height:155px;background:#e0e0e0;overflow:hidden;">'
-    +'<img id="'+imgId+'" src="'+(imgFromFeature||'https://placehold.co/520x310?text=...')+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src=\'https://placehold.co/520x310?text=Sem+imagem\'" />'
+    +'<img id="'+imgId+'" src="'+(img||'https://placehold.co/520x310?text=...')+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src=\'https://placehold.co/520x310?text=Sem+imagem\'" />'
     +'</div>'
     +'<button class="uzu-card-close" onclick="if(window._uzuPopup)window._uzuPopup.remove()"><svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg></button>'
     +'<button id="uzu-heart-'+id+'" data-propid="'+id+'" class="uzu-card-heart" onclick="toggleFavorite(this.dataset.propid,this)">'+iconHeart()+'</button>'
@@ -468,80 +437,54 @@ function openPopup(id,coords,price,imgFromFeature){
     +'<div style="width:100%;height:1px;background:#f0f0f0;margin:10px 0;"></div>'
     +'<div id="uzu-price-'+id+'" style="color:#2563eb;font-weight:800;font-size:17px;font-family:Inter,sans-serif;">'+priceStr+'<span style="font-weight:400;font-size:11px;color:#aaa;margin-left:3px;">/total</span></div>'
     +'</div>';
-
-  window._uzuPopup=new mapboxgl.Popup({offset:25,closeButton:false,className:'uzu-popup'})
-    .setLngLat(coords).setHTML(html).addTo(map);
-
+  window._uzuPopup=new mapboxgl.Popup({offset:25,closeButton:false,className:'uzu-popup'}).setLngLat(coords).setHTML(html).addTo(map);
+  // Guarda referência do popup atual para evitar race conditions
+  var popupRef=window._uzuPopup;
   fetch('https://www.uzuhome.com/version-734wl/api/1.1/obj/propriedades/'+id)
     .then(function(r){return r.json();})
     .then(function(data){
+      if(window._uzuPopup!==popupRef)return; // popup foi trocado entretanto
       var p=data&&data.response?data.response:null;if(!p)return;
-      var tEl=document.getElementById('uzu-title-'+id),
-          lEl=document.getElementById('uzu-loc-'+id),
-          mEl=document.getElementById('uzu-meta-'+id),
-          pEl=document.getElementById('uzu-price-'+id),
-          iEl=document.getElementById(imgId),
-          hEl=document.getElementById('uzu-heart-'+id);
+      var tEl=document.getElementById('uzu-title-'+id),lEl=document.getElementById('uzu-loc-'+id),
+          mEl=document.getElementById('uzu-meta-'+id),pEl=document.getElementById('uzu-price-'+id),
+          iEl=document.getElementById(imgId),hEl=document.getElementById('uzu-heart-'+id);
       if(tEl)tEl.innerText=p['Titulo']||p['ai_titulo']||'';
       if(lEl)lEl.innerText=p['Pais txt']||'';
       var pv=Number(p['Valor UZU:']||0);
       if(pEl)pEl.innerHTML='\u20ac'+(isFinite(pv)?pv:0).toLocaleString('pt-PT')+'<span style="font-weight:400;font-size:11px;color:#aaa;margin-left:3px;">/total</span>';
-      if(mEl){
-        var q=p['Quartos']||'',cb=p['Casas Banho']||'',a=p['Area Privativa']||'',parts=[];
-        if(q)parts.push('<span>'+iconBed()+q+'</span>');
-        if(cb)parts.push('<span>'+iconBath()+cb+'</span>');
-        if(a)parts.push('<span>'+iconArea()+a+' m\u00b2</span>');
-        mEl.innerHTML=parts.join('');
-      }
-      if(iEl){
-        var rawImg=p['Cover_url']||p['cover_url']||'';
-        if(Array.isArray(rawImg))rawImg=rawImg[0]||'';
-        var imgUrl=normalizeImageUrl(String(rawImg).trim());
-        if(imgUrl)iEl.src=imgUrl;
-      }
-      if(hEl&&isLoggedIn()){
-        if(_uzuLocalFavs[id]===undefined){
-          var fav=p['Favorit']||[];
-          _uzuLocalFavs[id]=(Array.isArray(fav)&&fav.indexOf(_uzuCurrentUserId)!==-1);
-        }
-        if(_uzuLocalFavs[id])hEl.classList.add('favorited');
-        else hEl.classList.remove('favorited');
-      }
+      if(mEl){var q=p['Quartos']||'',cb=p['Casas Banho']||'',a=p['Area Privativa']||'',pts=[];if(q)pts.push('<span>'+iconBed()+q+'</span>');if(cb)pts.push('<span>'+iconBath()+cb+'</span>');if(a)pts.push('<span>'+iconArea()+a+' m\u00b2</span>');mEl.innerHTML=pts.join('');}
+      if(iEl){var ri=p['Cover_url']||p['cover_url']||'';if(Array.isArray(ri))ri=ri[0]||'';var iu=normalizeImageUrl(String(ri).trim());if(iu)iEl.src=iu;}
+      if(hEl&&isLoggedIn()){if(_uzuLocalFavs[id]===undefined){var fv=p['Favorit']||[];_uzuLocalFavs[id]=(Array.isArray(fv)&&fv.indexOf(_uzuCurrentUserId)!==-1);}if(_uzuLocalFavs[id])hEl.classList.add('favorited');else hEl.classList.remove('favorited');}
     }).catch(function(err){console.error('Erro detalhes:',err);});
 }
 
 /* ── INIT ────────────────────────────────────────────────────────────────── */
-function waitForBubbleAndFetch(retries){
-  retries=retries||0;
-  if(retries>20){fetchProperties();return;}
+function waitForBubbleAndFetch(n){
+  n=n||0;if(n>20){fetchProperties();return;}
   if(typeof window.bubble_fn_J2B_totalPropriedades==='function')fetchProperties();
-  else setTimeout(function(){waitForBubbleAndFetch(retries+1);},100);
+  else setTimeout(function(){waitForBubbleAndFetch(n+1);},100);
 }
 window.uzuSetFiltros=function(f){_uzuFiltros=f||{};fetchProperties();};
 
 map.on('load',function(){
   ensureSourceAndLayers();
-  setTimeout(function(){map.resize();},50);
-  setTimeout(function(){map.resize();},300);
+  setTimeout(function(){map.resize();},50);setTimeout(function(){map.resize();},300);
   waitForBubbleAndFetch();
-  var input=document.getElementById('uzu-search');
-  if(input){
-    input.addEventListener('input',debounce(function(){
-      if(input.value.trim()==='')fetchProperties();
-    },400));
-  }
+  var inp=document.getElementById('uzu-search');
+  if(inp)inp.addEventListener('input',debounce(function(){if(inp.value.trim()==='')fetchProperties();},400));
 });
 
 window.addEventListener('resize',function(){if(map)map.resize();});
 map.on('moveend',debounce(function(){if(_uzuSkipNextMoveend)return;fetchProperties();},500));
+
 map.on('click','clusters',function(e){
-  var f=map.queryRenderedFeatures(e.point,{layers:['clusters']});
-  if(!f||!f[0])return;
+  var f=map.queryRenderedFeatures(e.point,{layers:['clusters']});if(!f||!f[0])return;
   var cId=f[0].properties.cluster_id,cC=f[0].geometry.coordinates;
   map.getSource('properties').getClusterExpansionZoom(cId,function(err,zoom){if(!err)map.easeTo({center:cC,zoom:zoom});});
 });
 map.on('mouseenter','clusters',function(){map.getCanvas().style.cursor='pointer';});
 map.on('mouseleave','clusters',function(){map.getCanvas().style.cursor='';});
+
 map.on('click','unclustered-point',function(e){
   var f=e.features&&e.features[0];if(!f)return;
   var props=f.properties||{},coords=f.geometry.coordinates.slice();
@@ -549,6 +492,7 @@ map.on('click','unclustered-point',function(e){
 });
 map.on('mouseenter','unclustered-point',function(){map.getCanvas().style.cursor='pointer';});
 map.on('mouseleave','unclustered-point',function(){map.getCanvas().style.cursor='';});
+
 window.flyToProperty=function(lat,lng,id){map.flyTo({center:[lng,lat],zoom:14});};
 </script>
 </body>
