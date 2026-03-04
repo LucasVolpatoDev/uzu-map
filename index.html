@@ -417,47 +417,50 @@ function uzuBuscar(){
   var q=(inp?inp.value:'').trim();
   if(!q)return;
 
-  // Busca SEM constraint de lat/lng — queremos achar pelo título, coordenadas ou não
-  var constraints=[
-    {key:'Titulo',constraint_type:'contains',value:q}
-  ];
-  var url=API+'?limit=1&constraints='+encodeURIComponent(JSON.stringify(constraints));
+  // Cancela qualquer geocoding em curso
+  if(window._geoCtrl){window._geoCtrl.abort();window._geoCtrl=null;}
 
+  var constraints=[{key:'Titulo',constraint_type:'contains',value:q}];
+  var url=API+'?limit=1&constraints='+encodeURIComponent(JSON.stringify(constraints));
+  var found=false;
+
+  console.log('[BUSCA] URL:', url);
   fetch(url)
-    .then(function(r){return r.json();})
+    .then(function(r){
+      console.log('[BUSCA] Status:', r.status);
+      return r.json();
+    })
     .then(function(data){
+      console.log('[BUSCA] Data:', JSON.stringify(data).substring(0,400));
       var results=(data&&data.response&&data.response.results)||[];
-      if(results.length===0){
-        // Nenhuma propriedade com esse título — tenta geocoding de lugar
-        uzuGeocode(q);
-        return;
-      }
+      console.log('[BUSCA] Resultados:', results.length);
+      if(results.length===0){uzuGeocode(q);return;}
+
+      found=true;
       var p=results[0];
       var lat=Number(p['lat1_number']!=null?p['lat1_number']:p.lat);
       var lng=Number(p['lng1_number']!=null?p['lng1_number']:p.lng);
 
-      // Tem coordenadas válidas → voa e abre popup
       if(isFinite(lat)&&isFinite(lng)&&Math.abs(lat)>0.5&&Math.abs(lng)>0.5){
+        // Propriedade tem coordenadas — vai directo para o pin
+        if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
         map.jumpTo({center:[lng,lat],zoom:15});
-        setTimeout(function(){
-          openPopup(
-            p._id,[lng,lat],
-            Number(p['Valor UZU:']||0),
-            normalizeImg(p['cover_url']||''),
-            p['Titulo']||'',
-            p['Quartos']||0,
-            p['Casas Banho']||0,
-            p['Area Privativa']||0
-          );
-        },150);
+        openPopup(
+          p._id,[lng,lat],
+          Number(p['Valor UZU:']||0),
+          normalizeImg(p['cover_url']||''),
+          p['Titulo']||'',
+          p['Quartos']||0,
+          p['Casas Banho']||0,
+          p['Area Privativa']||0
+        );
       } else {
-        // Propriedade encontrada mas sem coordenadas — mostra aviso
-        showToast('Propriedade encontrada mas sem localização definida','warning');
+        showToast('Propriedade "'+( p['Titulo']||q)+'" encontrada mas sem coordenadas no mapa','warning');
       }
     })
     .catch(function(err){
       console.error('[UZU] Busca erro:',err);
-      uzuGeocode(q);
+      if(!found)uzuGeocode(q);
     });
 }
 
