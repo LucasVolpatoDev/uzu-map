@@ -474,7 +474,7 @@ function openPopup(id,coords,price,img){
   var imgId='uzu-img-'+id,priceStr='€'+(isFinite(price)?price:0).toLocaleString('pt-PT');
   var html='<div style="position:relative;">'
     +'<div style="width:100%;height:155px;background:#e0e0e0;overflow:hidden;">'
-    +'<img id="'+imgId+'" src="'+(img||'https://placehold.co/520x310?text=...')+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src='https://placehold.co/520x310?text=Sem+imagem'" />'
+    +'<img id="'+imgId+'" src="'+(img||'https://placehold.co/520x310?text=Carregando')+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.onerror=null;this.src=\'https://placehold.co/520x310?text=Sem+imagem\'" />'
     +'</div>'
     +'<button class="uzu-card-close" onclick="if(window._uzuPopup)window._uzuPopup.remove()"><svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg></button>'
     +'<button id="uzu-heart-'+id+'" data-propid="'+id+'" class="uzu-card-heart" onclick="toggleFavorite(this.dataset.propid,this)">'+iconHeart()+'</button>'
