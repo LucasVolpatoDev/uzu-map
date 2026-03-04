@@ -287,7 +287,7 @@ function render(items){
   var features=[];
   for(var i=0;i<items.length;i++){
     var p=items[i];
-    var lat=Number(p.lat), lng=Number(p.lng);
+    var lat=Number(p['lat1_number']!=null?p['lat1_number']:p.lat), lng=Number(p['lng1_number']!=null?p['lng1_number']:p.lng);
     // Rejeita null, 0, teste (39.5/-8.0 exacto = centro de Portugal default)
     if(!isFinite(lat)||!isFinite(lng))continue;
     if(lat===0||lng===0)continue;
@@ -310,8 +310,8 @@ function render(items){
 function buildConstraints(){
   var c=[];
   // Só propriedades com coordenadas válidas
-  c.push({key:'lat',constraint_type:'is not empty'});
-  c.push({key:'lng',constraint_type:'is not empty'});
+  c.push({key:'lat1_number',constraint_type:'is_not_empty'});
+  c.push({key:'lng1_number',constraint_type:'is_not_empty'});
   // Só publicadas
   c.push({key:'Publicado?',constraint_type:'equals',value:'true'});
 
