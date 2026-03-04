@@ -180,39 +180,32 @@ function togglePill(el,tipo){var c=el.parentElement,was=el.classList.contains('a
 function toggleTamanho(el){var c=el.parentElement,was=el.classList.contains('active');c.querySelectorAll('.f-pill').forEach(function(p){p.classList.remove('active');});if(!was){el.classList.add('active');_filtrosPendentes.tamanhoMin=Number(el.dataset.min);_filtrosPendentes.tamanhoMax=Number(el.dataset.max);}else{delete _filtrosPendentes.tamanhoMin;delete _filtrosPendentes.tamanhoMax;}}
 function toggleCaract(el){el.classList.toggle('active');var sel=[];document.querySelectorAll('#pills-caract .f-pill.active').forEach(function(p){sel.push(p.dataset.val);});if(sel.length>0)_filtrosPendentes.caracteristicas=sel;else delete _filtrosPendentes.caracteristicas;}
 function changeCounter(tipo,delta){_counters[tipo]=Math.max(0,(_counters[tipo]||0)+delta);document.getElementById('val-'+tipo).textContent=_counters[tipo];if(_counters[tipo]>0)_filtrosPendentes[tipo]=_counters[tipo];else delete _filtrosPendentes[tipo];}
+
+/* ── APLICAR FILTROS — apenas refresh, sem mover mapa ───────────────────── */
 function aplicarFiltros(){
-  var pMin=document.getElementById('input-precoMin').value,pMax=document.getElementById('input-precoMax').value;
-  if(pMin&&Number(pMin)>0)_filtrosPendentes.precoMin=Number(pMin);else delete _filtrosPendentes.precoMin;
-  if(pMax&&Number(pMax)>0)_filtrosPendentes.precoMax=Number(pMax);else delete _filtrosPendentes.precoMax;
+  // Lê os inputs de preço
+  var pMin=document.getElementById('input-precoMin').value;
+  var pMax=document.getElementById('input-precoMax').value;
+  if(pMin&&Number(pMin)>0) _filtrosPendentes.precoMin=Number(pMin);
+  else delete _filtrosPendentes.precoMin;
+  if(pMax&&Number(pMax)>0) _filtrosPendentes.precoMax=Number(pMax);
+  else delete _filtrosPendentes.precoMax;
+
+  // Aplica filtros
   _uzuFiltros=Object.assign({},_filtrosPendentes);
+
+  // Fecha popup aberto se houver
   if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
-  // Busca global e ajusta mapa para mostrar resultados
-  if(fetchController)fetchController.abort();
-  fetchController=new AbortController();
-  fetch(buildUrl(-90,-180,90,180,''),{signal:fetchController.signal})
-    .then(function(r){return r.json();})
-    .then(function(data){
-      var result=parseGeoJSONResponse(data);
-      setGeoJSON({type:'FeatureCollection',features:result.features});
-      if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
-      try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
-      // Ajusta mapa para mostrar todos os resultados
-      if(result.features.length>0){
-        var bounds=new mapboxgl.LngLatBounds();
-        result.features.forEach(function(f){bounds.extend(f.geometry.coordinates);});
-        _uzuSkipNextMoveend=true;
-        map.fitBounds(bounds,{padding:100,maxZoom:13,duration:800,essential:true});
-        setTimeout(function(){_uzuSkipNextMoveend=false;},2000);
-      }
-    })
-    .catch(function(err){if(err&&err.name==='AbortError')return;});
+
+  // Apenas refresha as propriedades — SEM mover o mapa
+  fetchProperties();
 }
+
 function limparFiltros(){_filtrosPendentes={};_uzuFiltros={};_counters={quartos:0,casasBanho:0,vagas:0};['quartos','casasBanho','vagas'].forEach(function(k){document.getElementById('val-'+k).textContent='0';});document.querySelectorAll('.f-pill.active').forEach(function(p){p.classList.remove('active');});document.getElementById('input-precoMin').value='';document.getElementById('input-precoMax').value='';fetchProperties();}
 
 /* ── USER ────────────────────────────────────────────────────────────────── */
 var _uzuCurrentUserId='';
 var _uzuLocalFavs={};
-// Lê userId da URL se fornecido pelo Bubble
 try{var _urlParams=new URLSearchParams(window.location.search);var _uidFromUrl=_urlParams.get('uid');if(_uidFromUrl&&_uidFromUrl.length>5)_uzuCurrentUserId=_uidFromUrl;}catch(e){}
 try{var cookies=document.cookie.split(';');for(var ci=0;ci<cookies.length;ci++){var c=cookies[ci].trim(),eqIdx=c.indexOf('=');if(eqIdx===-1)continue;var cName=c.substring(0,eqIdx),cVal=c.substring(eqIdx+1);if(cName.indexOf('_u1_')!==-1&&cName.indexOf('main')!==-1&&cVal&&cVal.indexOf('x')!==-1){_uzuCurrentUserId=cVal;break;}}}catch(e){}
 window.bubble_fn_J2B_userId=function(val){_uzuCurrentUserId=val||'';};
@@ -293,10 +286,11 @@ function parseGeoJSONResponse(data){
   }).filter(function(f){var c=f.geometry.coordinates;return isFinite(c[0])&&isFinite(c[1]);})};
 }
 
-/* ── FETCH PROPERTIES (navegação normal do mapa, sem query) ──────────────── */
+/* ── FETCH PROPERTIES ────────────────────────────────────────────────────── */
 function fetchProperties(){
   var bounds=map.getBounds();
   var hasFilters=Object.keys(_uzuFiltros).length>0;
+  // Com filtros activos, busca globalmente para não perder resultados fora do viewport
   var swLat=hasFilters?-90:bounds.getSouthWest().lat;
   var swLng=hasFilters?-180:bounds.getSouthWest().lng;
   var neLat=hasFilters?90:bounds.getNorthEast().lat;
@@ -312,13 +306,13 @@ function fetchProperties(){
     .then(function(data){
       var result=parseGeoJSONResponse(data);
       setGeoJSON({type:'FeatureCollection',features:result.features});
-      if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
+      if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
+      try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
     })
     .catch(function(err){if(err&&err.name==='AbortError')return;console.error(err);});
 }
 
-/* ── GEOCODING: navega para local sem abrir popup ────────────────────────── */
-// Controller dedicado APENAS ao geocoding — nunca é cancelado pelo fetchController
+/* ── GEOCODING ───────────────────────────────────────────────────────────── */
 var _geocodeController=null;
 function uzuGeocode(query){
   query=(query||'').trim();
@@ -349,43 +343,25 @@ function uzuGeocode(query){
     });
 }
 
-/* ── BUSCA PRINCIPAL ─────────────────────────────────────────────────────────
-   Fluxo:
-   1. Chama API de propriedades com a query
-   2. Se sem resultados → geocoding direto
-   3. Se com resultados → verifica títulos um a um
-      → título bate (score>0) → voa + abre popup
-      → nenhum bate           → geocoding
-   Usa _searchController separado para não interferir com fetchController
-   ────────────────────────────────────────────────────────────────────────── */
+/* ── BUSCA PRINCIPAL ─────────────────────────────────────────────────────── */
 var _searchController=null;
 function uzuBuscar(){
   var input=document.getElementById('uzu-search');
   var query=(input?input.value:'').trim();
   if(!query){fetchProperties();return;}
-
-  // Controller separado só para a busca — não cancela o geocode nem o fetchProperties
   if(_searchController)_searchController.abort();
   _searchController=new AbortController();
   var signal=_searchController.signal;
-
   fetch(buildUrl(-90,-180,90,180,query),{signal:signal})
     .then(function(r){return r.json();})
     .then(function(data){
       if(signal.aborted)return;
       var result=parseGeoJSONResponse(data);
       var features=result.features;
-
-      if(!features||features.length===0){
-        uzuGeocode(query);
-        return;
-      }
-
+      if(!features||features.length===0){uzuGeocode(query);return;}
       var queryLow=query.toLowerCase().trim();
       var pending=features.length,bestFeature=null,bestScore=0,resultsMap={};
-
       features.forEach(function(f){
-        // Cada fetch de detalhe tem o seu próprio tratamento — sem signal partilhado
         fetch('https://www.uzuhome.com/version-734wl/api/1.1/obj/propriedades/'+f.properties.id)
           .then(function(r){return r.json();})
           .then(function(d){
@@ -507,7 +483,6 @@ function openPopup(id,coords,price,imgFromFeature){
         var rawImg=p['Cover_url']||p['cover_url']||'';
         if(Array.isArray(rawImg))rawImg=rawImg[0]||'';
         var imgUrl=normalizeImageUrl(String(rawImg).trim());
-        // Só substitui se vier URL válida do /obj/ (não sobrescreve com vazio)
         if(imgUrl)iEl.src=imgUrl;
       }
       if(hEl&&isLoggedIn()){
@@ -537,7 +512,6 @@ map.on('load',function(){
   waitForBubbleAndFetch();
   var input=document.getElementById('uzu-search');
   if(input){
-    // Apagar o input restaura o mapa normal
     input.addEventListener('input',debounce(function(){
       if(input.value.trim()==='')fetchProperties();
     },400));
