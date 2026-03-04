@@ -433,14 +433,16 @@ function uzuBuscar(){
 
       if(isFinite(lat)&&isFinite(lng)&&Math.abs(lat)>0.5&&Math.abs(lng)>0.5){
         if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
-        map.jumpTo({center:[lng,lat],zoom:15});
-        openPopup(
-          r.ids,[lng,lat],
-          Number(r.prices||0),
-          normalizeImageUrl(r.image_urls||''),
-          r.titulo||'',
-          0,0,0
-        );
+        map.flyTo({center:[lng,lat],zoom:15,speed:1.4,curve:1.5,essential:true});
+        map.once('moveend',function(){
+          openPopup(
+            r.ids,[lng,lat],
+            Number(r.prices||0),
+            normalizeImageUrl(r.image_urls||''),
+            r.titulo||'',
+            0,0,0
+          );
+        });
       } else {
         showToast('Propriedade encontrada mas sem localização no mapa','warning');
       }
