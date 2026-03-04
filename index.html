@@ -181,23 +181,18 @@ function toggleTamanho(el){var c=el.parentElement,was=el.classList.contains('act
 function toggleCaract(el){el.classList.toggle('active');var sel=[];document.querySelectorAll('#pills-caract .f-pill.active').forEach(function(p){sel.push(p.dataset.val);});if(sel.length>0)_filtrosPendentes.caracteristicas=sel;else delete _filtrosPendentes.caracteristicas;}
 function changeCounter(tipo,delta){_counters[tipo]=Math.max(0,(_counters[tipo]||0)+delta);document.getElementById('val-'+tipo).textContent=_counters[tipo];if(_counters[tipo]>0)_filtrosPendentes[tipo]=_counters[tipo];else delete _filtrosPendentes[tipo];}
 
-/* ── APLICAR FILTROS — apenas refresh, sem mover mapa ───────────────────── */
+/* ── APLICAR FILTROS: apenas atualiza dados, SEM mover o mapa ────────────── */
 function aplicarFiltros(){
-  // Lê os inputs de preço
   var pMin=document.getElementById('input-precoMin').value;
   var pMax=document.getElementById('input-precoMax').value;
-  if(pMin&&Number(pMin)>0) _filtrosPendentes.precoMin=Number(pMin);
-  else delete _filtrosPendentes.precoMin;
-  if(pMax&&Number(pMax)>0) _filtrosPendentes.precoMax=Number(pMax);
-  else delete _filtrosPendentes.precoMax;
-
-  // Aplica filtros
-  _uzuFiltros=Object.assign({},_filtrosPendentes);
+  if(pMin&&Number(pMin)>0) _filtrosPendentes.precoMin=Number(pMin); else delete _filtrosPendentes.precoMin;
+  if(pMax&&Number(pMax)>0) _filtrosPendentes.precoMax=Number(pMax); else delete _filtrosPendentes.precoMax;
 
   // Fecha popup aberto se houver
   if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
 
-  // Apenas refresha as propriedades — SEM mover o mapa
+  // Aplica filtros e faz refresh dos pins/clusters sem mover o mapa
+  _uzuFiltros=Object.assign({},_filtrosPendentes);
   fetchProperties();
 }
 
@@ -247,7 +242,18 @@ function ensureSourceAndLayers(){
   map.addLayer({id:'unclustered-bg',type:'circle',source:'properties',filter:['!',['has','point_count']],paint:{'circle-color':'#ffffff','circle-radius':22,'circle-stroke-width':1.5,'circle-stroke-color':'#cccccc'}});
   map.addLayer({id:'unclustered-point',type:'symbol',source:'properties',filter:['!',['has','point_count']],layout:{'text-field':['concat','\u20ac',['to-string',['coalesce',['get','price'],0]]],'text-size':12,'text-font':['DIN Offc Pro Medium','Arial Unicode MS Bold']},paint:{'text-color':'#1a1a2e'}});
 }
-function setGeoJSON(g){ensureSourceAndLayers();map.getSource('properties').setData(g);}
+function setGeoJSON(g){
+  ensureSourceAndLayers();
+  var src=map.getSource('properties');
+  if(!src)return;
+  src.setData(g);
+  // Força re-render dos clusters após atualização dos dados
+  map.once('sourcedata',function(e){
+    if(e.sourceId==='properties'&&e.isSourceLoaded){
+      map.triggerRepaint();
+    }
+  });
+}
 
 /* ── BUILD URL ───────────────────────────────────────────────────────────── */
 function buildUrl(swLat,swLng,neLat,neLng,query){
@@ -290,7 +296,7 @@ function parseGeoJSONResponse(data){
 function fetchProperties(){
   var bounds=map.getBounds();
   var hasFilters=Object.keys(_uzuFiltros).length>0;
-  // Com filtros activos, busca globalmente para não perder resultados fora do viewport
+  // Com filtros ativos, busca global para não perder props fora do viewport
   var swLat=hasFilters?-90:bounds.getSouthWest().lat;
   var swLng=hasFilters?-180:bounds.getSouthWest().lng;
   var neLat=hasFilters?90:bounds.getNorthEast().lat;
@@ -305,9 +311,17 @@ function fetchProperties(){
     .then(function(r){return r.json();})
     .then(function(data){
       var result=parseGeoJSONResponse(data);
-      setGeoJSON({type:'FeatureCollection',features:result.features});
-      if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
-      try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
+      // Limpa dados primeiro para forçar re-render limpo dos clusters
+      var src=map.getSource('properties');
+      if(src){
+        src.setData({type:'FeatureCollection',features:[]});
+        setTimeout(function(){
+          src.setData({type:'FeatureCollection',features:result.features});
+          map.triggerRepaint();
+          if(window.bubble_fn_J2B_totalPropriedades)window.bubble_fn_J2B_totalPropriedades(result.features.length);
+          try{window.parent.postMessage({type:'uzu_total',value:result.features.length},'*');}catch(e){}
+        },30);
+      }
     })
     .catch(function(err){if(err&&err.name==='AbortError')return;console.error(err);});
 }
