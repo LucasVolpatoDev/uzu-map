@@ -420,7 +420,7 @@ function uzuBuscar(){
   // Cancela qualquer geocoding em curso
   if(window._geoCtrl){window._geoCtrl.abort();window._geoCtrl=null;}
 
-  var constraints=[{key:'Titulo',constraint_type:'contains',value:q}];
+  var constraints=[{key:'name_text',constraint_type:'contains',value:q}];
   var url=API+'?limit=1&constraints='+encodeURIComponent(JSON.stringify(constraints));
   var found=false;
 
