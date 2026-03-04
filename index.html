@@ -415,7 +415,44 @@ function uzuGeocode(query){
 function uzuBuscar(){
   var inp=document.getElementById('uzu-search');
   var q=(inp?inp.value:'').trim();
-  if(q)uzuGeocode(q);
+  if(!q)return;
+  // 1. Primeiro: procura por título de propriedade no Bubble
+  var constraints=[
+    {key:'lat1_number',constraint_type:'is_not_empty'},
+    {key:'lng1_number',constraint_type:'is_not_empty'},
+    {key:'Titulo',constraint_type:'contains',value:q}
+  ];
+  var url=API+'?limit=1&constraints='+encodeURIComponent(JSON.stringify(constraints));
+  fetch(url)
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var results=(data&&data.response&&data.response.results)||[];
+      if(results.length>0){
+        // Encontrou propriedade — voa para ela e abre popup
+        var p=results[0];
+        var lat=Number(p['lat1_number']||p.lat);
+        var lng=Number(p['lng1_number']||p.lng);
+        if(isFinite(lat)&&isFinite(lng)&&Math.abs(lat)>0.5&&Math.abs(lng)>0.5){
+          map.flyTo({center:[lng,lat],zoom:15,essential:true});
+          map.once('idle',function(){
+            openPopup(
+              p._id,
+              [lng,lat],
+              Number(p['Valor UZU:']||0),
+              normalizeImg(p['cover_url']||''),
+              p['Titulo']||'',
+              p['Quartos']||0,
+              p['Casas Banho']||0,
+              p['Area Privativa']||0
+            );
+          });
+          return;
+        }
+      }
+      // 2. Fallback: geocoding de localização
+      uzuGeocode(q);
+    })
+    .catch(function(){uzuGeocode(q);});
 }
 
 /* ── ICONS ───────────────────────────────────────────────────────────────── */
