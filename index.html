@@ -414,42 +414,32 @@ function uzuGeocode(query){
 }
 function uzuBuscar(){
   var inp=document.getElementById('uzu-search');
-  var q=(inp?inp.value:'').trim().toLowerCase();
+  var q=(inp?inp.value:'').trim();
   if(!q)return;
 
   if(window._geoCtrl){window._geoCtrl.abort();window._geoCtrl=null;}
 
-  // Bubble não suporta "contains" em texto — busca tudo e filtra no JS
-  var url=API+'?limit=100&constraints='+encodeURIComponent(JSON.stringify([
-    {key:'Publicado?',constraint_type:'equals',value:'true'}
-  ]));
+  var url='https://www.uzuhome.com/version-734wl/api/1.1/wf/buscar_propriedade'
+    +'?titulo='+encodeURIComponent(q);
 
   fetch(url)
     .then(function(r){return r.json();})
     .then(function(data){
-      var results=(data&&data.response&&data.response.results)||[];
-      // Filtra pelo título no JS (case-insensitive)
-      var match=null;
-      for(var i=0;i<results.length;i++){
-        var titulo=(results[i]['Titulo']||results[i]['name_text']||'').toLowerCase();
-        if(titulo.indexOf(q)!==-1){match=results[i];break;}
-      }
-      if(!match){uzuGeocode(q);return;}
+      var r=data&&data.response?data.response:null;
+      if(!r||!r.ids){uzuGeocode(q);return;}
 
-      var lat=Number(match['lat1_number']!=null?match['lat1_number']:match.lat);
-      var lng=Number(match['lng1_number']!=null?match['lng1_number']:match.lng);
+      var lat=Number(r.lats);
+      var lng=Number(r.lngs);
 
       if(isFinite(lat)&&isFinite(lng)&&Math.abs(lat)>0.5&&Math.abs(lng)>0.5){
         if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
         map.jumpTo({center:[lng,lat],zoom:15});
         openPopup(
-          match._id,[lng,lat],
-          Number(match['Valor UZU:']||0),
-          normalizeImageUrl(match['cover_url']||''),
-          match['Titulo']||match['name_text']||'',
-          match['Quartos']||0,
-          match['Casas Banho']||0,
-          match['Area Privativa']||0
+          r.ids,[lng,lat],
+          Number(r.prices||0),
+          normalizeImageUrl(r.image_urls||''),
+          r.titulo||'',
+          0,0,0
         );
       } else {
         showToast('Propriedade encontrada mas sem localização no mapa','warning');
