@@ -219,26 +219,12 @@ function normalizeImageUrl(u){
   if(u.startsWith('//'))return'https:'+u;
   return'https://510a37fb0cd15334d1f7fc33af15451c.cdn.bubble.io/'+u;
 }
+// LOGIN: controlado EXCLUSIVAMENTE pelo postMessage do Bubble
+// A URL nunca é usada para autenticação — pode ficar desactualizada entre sessões
 var _uzuLoggedIn = false;
 
-function _isValidUid(u){
-  if(!u||typeof u!=='string')return false;
-  u=u.trim();
-  // Rejeita valores falsos que o Bubble passa quando deslogado
-  if(u===''||u==='0'||u==='undefined'||u==='null'||u==='false')return false;
-  if(u.indexOf('[[')!==-1)return false;  // [[Current User's unique id]]
-  if(u.indexOf('Current User')!==-1)return false;
-  if(u.length<15)return false; // UIDs do Bubble têm sempre 20+ chars
-  return true;
-}
 function isLoggedIn(){
-  if(_uzuLoggedIn&&_isValidUid(_uzuCurrentUserId))return true;
-  // Fallback: lê da URL
-  try{
-    var u=(new URLSearchParams(window.location.search)).get('uid')||'';
-    if(_isValidUid(u)){_uzuCurrentUserId=u;_uzuLoggedIn=true;return true;}
-  }catch(e){}
-  return false;
+  return _uzuLoggedIn === true;
 }
 function fmt(n){return'\u20ac'+(isFinite(n)?Number(n):0).toLocaleString('pt-PT');}
 
