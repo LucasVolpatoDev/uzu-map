@@ -220,13 +220,19 @@ function normalizeImageUrl(u){
   return'https://510a37fb0cd15334d1f7fc33af15451c.cdn.bubble.io/'+u;
 }
 function isLoggedIn(){
-  // Re-lê uid da URL sempre que verificar login
   try{
     var _p=new URLSearchParams(window.location.search);
-    var _u=_p.get('uid');
-    if(_u&&_u.length>5&&_u.indexOf('[[')===-1)_uzuCurrentUserId=_u;
+    var _u=_p.get('uid')||'';
+    // Bubble quando deslogado pode passar "", "undefined", "null", ou [[...]]
+    var invalid=['','undefined','null','false'];
+    var isInvalid=invalid.indexOf(_u.toLowerCase())!==-1
+      ||_u.indexOf('[[')!==-1
+      ||_u.indexOf('Current')!==-1
+      ||_u.length<10;
+    if(!isInvalid)_uzuCurrentUserId=_u;
+    else _uzuCurrentUserId='';
   }catch(e){}
-  return!!(_uzuCurrentUserId&&_uzuCurrentUserId!==''&&_uzuCurrentUserId.indexOf('[[')===-1);
+  return _uzuCurrentUserId.length>=10;
 }
 function fmt(n){return'\u20ac'+(isFinite(n)?Number(n):0).toLocaleString('pt-PT');}
 
