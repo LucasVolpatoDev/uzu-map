@@ -213,8 +213,8 @@ function aplicarFiltros(){
   var pMax=document.getElementById('input-precoMax').value;
   if(pMin&&Number(pMin)>0)_filtrosPendentes.precoMin=Number(pMin);else delete _filtrosPendentes.precoMin;
   if(pMax&&Number(pMax)>0)_filtrosPendentes.precoMax=Number(pMax);else delete _filtrosPendentes.precoMax;
-  if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
   _uzuFiltros=Object.assign({},_filtrosPendentes);
+  resetSourceAndLayers();
   fetchProperties();
 }
 function limparFiltros(){
@@ -222,6 +222,7 @@ function limparFiltros(){
   ['quartos','casasBanho','vagas'].forEach(function(k){document.getElementById('val-'+k).textContent='0';});
   document.querySelectorAll('.f-pill.active').forEach(function(p){p.classList.remove('active');});
   document.getElementById('input-precoMin').value='';document.getElementById('input-precoMax').value='';
+  resetSourceAndLayers();
   fetchProperties();
 }
 
@@ -279,6 +280,12 @@ function ensureSourceAndLayers(){
 }
 
 /* ── SET DATA: direto, sem hacks ─────────────────────────────────────────── */
+function resetSourceAndLayers(){
+  if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
+  ['unclustered-point','unclustered-bg','cluster-count','clusters'].forEach(function(id){if(map.getLayer(id))map.removeLayer(id);});
+  if(map.getSource('properties'))map.removeSource('properties');
+  ensureSourceAndLayers();
+}
 function setGeoJSON(features){
   ensureSourceAndLayers();
   var src=map.getSource('properties');
@@ -312,7 +319,7 @@ function parseResponse(data){
   return ids.map(function(id,i){
     var lat=Number(lats[i]),lng=Number(lngs[i]),price=Number(prices[i]!=null?prices[i]:0);
     return{type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},properties:{id:id,price:isFinite(price)?price:0,imgUrl:imgs[i]||''}};
-  }).filter(function(f){var c=f.geometry.coordinates;return isFinite(c[0])&&isFinite(c[1])&&(c[0]!==0||c[1]!==0);});
+  }).filter(function(f){var c=f.geometry.coordinates;return isFinite(c[0])&&isFinite(c[1])&&c[0]!==0&&c[1]!==0&&Math.abs(c[0])>0.01&&Math.abs(c[1])>0.01;});
 }
 
 /* ── FETCH PROPERTIES ────────────────────────────────────────────────────── */
