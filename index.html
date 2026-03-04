@@ -347,12 +347,22 @@ function fetchAll(){
     if(seq!==_fetchSeq)return;
     var constraints=buildConstraints();
     var url=API+'?limit=100&cursor='+(cursor||0)+'&constraints='+encodeURIComponent(JSON.stringify(constraints));
+    console.log('[UZU] Fetching:', url);
     fetch(url,{signal:_fetchCtrl.signal})
-      .then(function(r){return r.json();})
+      .then(function(r){
+        console.log('[UZU] Status:', r.status, r.statusText);
+        return r.json();
+      })
       .then(function(data){
+        console.log('[UZU] Response keys:', Object.keys(data||{}));
+        console.log('[UZU] Response body:', JSON.stringify(data).substring(0,500));
         if(seq!==_fetchSeq)return;
         var r=data&&data.response?data.response:null;
-        if(!r)return;
+        if(!r){
+          console.error('[UZU] No response object. Full data:', JSON.stringify(data));
+          return;
+        }
+        console.log('[UZU] Results count:', (r.results||[]).length, 'Remaining:', r.remaining);
         allItems=allItems.concat(r.results||[]);
         if(r.remaining>0){
           fetchPage((cursor||0)+100);
