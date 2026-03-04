@@ -487,17 +487,28 @@ function toggleFavorite(id,btn){
 }
 
 /* ── POPUP ───────────────────────────────────────────────────────────────── */
+function renderHeart(id, isFav){
+  // Injeta ou remove o coração baseado no estado de login actual
+  var container = document.getElementById('uzu-heart-container-'+id);
+  if(!container)return;
+  if(!_uzuLoggedIn){container.innerHTML='';return;}
+  container.innerHTML='<button id="uzu-heart-'+id+'" data-propid="'+id+'" class="uzu-card-heart" onclick="toggleFavorite(this.dataset.propid,this)">'+iconHeart()+'</button>';
+  if(isFav){var h=document.getElementById('uzu-heart-'+id);if(h)h.classList.add('favorited');}
+}
+
 function openPopup(id,coords,price,img){
   if(window.bubble_fn_J2B_markerClicked)window.bubble_fn_J2B_markerClicked(id);
   try{window.parent.postMessage({type:'uzu_markerClicked',id:id},'*');}catch(e){}
   if(window._uzuPopup)window._uzuPopup.remove();
+  window._uzuOpenPopupId=id;
   var imgId='uzu-img-'+id;
-  var html='<div style="position:relative;">'
+  var html=''
+    +'<div style="position:relative;">'
     +'<div style="width:100%;height:155px;background:#e0e0e0;overflow:hidden;">'
-    +'<img id="'+imgId+'" src="'+(normalizeImageUrl(img)||'https://placehold.co/520x310?text=Carregando')+'" style="width:100%;height:100%;object-fit:cover;display:block;" />'
+    +'<img id="'+imgId+'" src="'+(normalizeImageUrl(img)||'https://placehold.co/520x310?text=Carregando')+'" style="width:100%;height:100%;object-fit:cover;display:block;"/>'
     +'</div>'
     +'<button class="uzu-card-close" onclick="if(window._uzuPopup)window._uzuPopup.remove()"><svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg></button>'
-    +(_uzuLoggedIn?'<button id="uzu-heart-'+id+'" data-propid="'+id+'" class="uzu-card-heart" onclick="toggleFavorite(this.dataset.propid,this)">'+iconHeart()+'</button>':'')
+    +'<div id="uzu-heart-container-'+id+'"></div>'
     +'</div>'
     +'<div style="padding:12px 14px 14px;">'
     +'<div id="uzu-title-'+id+'" style="font-weight:700;font-size:14px;color:#1a1a2e;line-height:1.3;font-family:Inter,sans-serif;">A carregar...</div>'
@@ -508,21 +519,38 @@ function openPopup(id,coords,price,img){
     +'</div>';
   window._uzuPopup=new mapboxgl.Popup({offset:25,closeButton:false,className:'uzu-popup'}).setLngLat(coords).setHTML(html).addTo(map);
   var ref=window._uzuPopup;
+  // Renderiza coração imediatamente com estado actual de login
+  renderHeart(id, !!_uzuLocalFavs[id]);
+  // Busca dados completos
   fetch('https://www.uzuhome.com/version-734wl/api/1.1/obj/propriedades/'+id)
     .then(function(r){return r.json();})
     .then(function(data){
       if(window._uzuPopup!==ref)return;
       var p=data&&data.response?data.response:null;if(!p)return;
-      var tEl=document.getElementById('uzu-title-'+id),lEl=document.getElementById('uzu-loc-'+id),
-          mEl=document.getElementById('uzu-meta-'+id),pEl=document.getElementById('uzu-price-'+id),
-          iEl=document.getElementById(imgId),hEl=document.getElementById('uzu-heart-'+id);
+      var tEl=document.getElementById('uzu-title-'+id),
+          lEl=document.getElementById('uzu-loc-'+id),
+          mEl=document.getElementById('uzu-meta-'+id),
+          pEl=document.getElementById('uzu-price-'+id),
+          iEl=document.getElementById(imgId);
       if(tEl)tEl.innerText=p['Titulo']||'';
       if(lEl)lEl.innerText=p['Pais txt']||'';
       var pv=Number(p['Valor UZU:']||0);
       if(pEl)pEl.innerHTML=fmt(pv)+'<span style="font-weight:400;font-size:11px;color:#aaa;margin-left:3px;">/total</span>';
-      if(mEl){var q=p['Quartos']||'',cb=p['Casas Banho']||'',a=p['Area Privativa']||'',pts=[];if(q)pts.push('<span>'+iconBed()+q+'</span>');if(cb)pts.push('<span>'+iconBath()+cb+'</span>');if(a)pts.push('<span>'+iconArea()+a+' m\u00b2</span>');mEl.innerHTML=pts.join('');}
+      if(mEl){
+        var q=p['Quartos']||'',cb=p['Casas Banho']||'',a=p['Area Privativa']||'',pts=[];
+        if(q)pts.push('<span>'+iconBed()+q+'</span>');
+        if(cb)pts.push('<span>'+iconBath()+cb+'</span>');
+        if(a)pts.push('<span>'+iconArea()+a+' m²</span>');
+        mEl.innerHTML=pts.join('');
+      }
       if(iEl){var ri=p['cover_url']||'';if(Array.isArray(ri))ri=ri[0]||'';var iu=normalizeImageUrl(String(ri).trim());if(iu)iEl.src=iu;}
-      if(hEl&&isLoggedIn()){if(_uzuLocalFavs[id]===undefined){var fv=p['Favorit']||[];_uzuLocalFavs[id]=(Array.isArray(fv)&&fv.indexOf(_uzuCurrentUserId)!==-1);}if(_uzuLocalFavs[id])hEl.classList.add('favorited');else hEl.classList.remove('favorited');}
+      // Verifica se já está nos favoritos (campo Favorit da propriedade)
+      if(_uzuLoggedIn&&_uzuCurrentUserId){
+        var favs=p['Favorit']||[];
+        var isFav=Array.isArray(favs)?favs.indexOf(_uzuCurrentUserId)!==-1:false;
+        _uzuLocalFavs[id]=isFav;
+        renderHeart(id, isFav);
+      }
     }).catch(function(){});
 }
 
@@ -535,10 +563,10 @@ window.addEventListener('message',function(e){
     var ok=uid.length>=15&&uid.indexOf('[[')===-1&&uid.indexOf('Current')===-1&&uid!=='undefined'&&uid!=='null';
     _uzuLoggedIn=ok;
     _uzuCurrentUserId=ok?uid:'';
-    // Atualiza coração no popup aberto se existir
-    document.querySelectorAll('.uzu-card-heart').forEach(function(btn){
-      btn.style.display=ok?'flex':'none';
-    });
+    // Re-renderiza coração no popup aberto se existir
+    if(window._uzuOpenPopupId){
+      renderHeart(window._uzuOpenPopupId, !!_uzuLocalFavs[window._uzuOpenPopupId]);
+    }
   }
 });
 
