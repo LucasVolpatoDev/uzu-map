@@ -339,10 +339,8 @@ function render(items){
 /* ── BUILD CONSTRAINTS para a Bubble Data API ────────────────────────────── */
 function buildConstraints(){
   var c=[];
-  // Só propriedades com coordenadas válidas
   c.push({key:'lat1_number',constraint_type:'is_not_empty'});
   c.push({key:'lng1_number',constraint_type:'is_not_empty'});
-  // Só publicadas
   c.push({key:'Publicado?',constraint_type:'equals',value:'true'});
 
   if(_uzuFiltros.tipo)
@@ -353,16 +351,24 @@ function buildConstraints(){
     c.push({key:'Valor UZU:',constraint_type:'greater than',value:_uzuFiltros.precoMin-1});
   if(_uzuFiltros.precoMax)
     c.push({key:'Valor UZU:',constraint_type:'less than',value:_uzuFiltros.precoMax+1});
+  // Exato: só mostra a propriedade com exatamente N quartos/banhos/vagas
   if(_uzuFiltros.quartos)
-    c.push({key:'Quartos',constraint_type:'greater than',value:_uzuFiltros.quartos-1});
+    c.push({key:'Quartos',constraint_type:'equals',value:_uzuFiltros.quartos});
   if(_uzuFiltros.casasBanho)
-    c.push({key:'Casas Banho',constraint_type:'greater than',value:_uzuFiltros.casasBanho-1});
+    c.push({key:'Casas Banho',constraint_type:'equals',value:_uzuFiltros.casasBanho});
   if(_uzuFiltros.vagas)
-    c.push({key:'Garagens',constraint_type:'greater than',value:_uzuFiltros.vagas-1});
+    c.push({key:'Garagens',constraint_type:'equals',value:_uzuFiltros.vagas});
   if(_uzuFiltros.tamanhoMin)
     c.push({key:'Area Privativa',constraint_type:'greater than',value:_uzuFiltros.tamanhoMin-1});
   if(_uzuFiltros.tamanhoMax)
     c.push({key:'Area Privativa',constraint_type:'less than',value:_uzuFiltros.tamanhoMax+1});
+  // Características: cada característica selecionada vira um constraint separado (AND)
+  // Bubble: "OS Caracteristicas Adicionais contains X" garante que X está na lista
+  if(_uzuFiltros.caracteristicas&&_uzuFiltros.caracteristicas.length>0){
+    _uzuFiltros.caracteristicas.forEach(function(caract){
+      c.push({key:'OS Caracteristicas Adicionais',constraint_type:'contains',value:caract});
+    });
+  }
   return c;
 }
 
