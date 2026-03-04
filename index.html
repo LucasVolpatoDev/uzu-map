@@ -559,11 +559,11 @@ window.bubble_fn_J2B_userId=function(v){_uzuCurrentUserId=v||'';};
 window.addEventListener('message',function(e){
   if(!e.data)return;
   if(e.data.type==='uzu_userid'){
-    var uid=(e.data.userId||'').trim();
-    var ok=uid.length>=15&&uid.indexOf('[[')===-1&&uid.indexOf('Current')===-1&&uid!=='undefined'&&uid!=='null';
-    _uzuLoggedIn=ok;
-    _uzuCurrentUserId=ok?uid:'';
-    // Re-renderiza coração no popup aberto se existir
+    // Bubble envia loggedIn:'true' ou loggedIn:'false' explicitamente
+    var loggedIn = e.data.loggedIn === true || e.data.loggedIn === 'true';
+    _uzuLoggedIn = loggedIn;
+    _uzuCurrentUserId = loggedIn ? (e.data.userId||'') : '';
+    // Re-renderiza coração no popup aberto
     if(window._uzuOpenPopupId){
       renderHeart(window._uzuOpenPopupId, !!_uzuLocalFavs[window._uzuOpenPopupId]);
     }
