@@ -231,7 +231,9 @@ var _uzuLoggedIn = (function(){
 })();
 var _uzuCurrentUserId = (function(){
   try{
-    var v = new URLSearchParams(window.location.search).get('uid')||'';
+    // Remove brackets que o Bubble adiciona: [1772...] → 1772...
+    var v = (new URLSearchParams(window.location.search).get('uid')||'')
+              .replace(/[\[\]]/g,'').trim();
     return v;
   }catch(e){return '';}
 })();
