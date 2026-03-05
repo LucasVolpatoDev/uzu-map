@@ -527,9 +527,9 @@ function openPopup(id,coords,price,img){
     +'<div id="uzu-price-'+id+'" style="color:#2563eb;font-weight:800;font-size:17px;font-family:Inter,sans-serif;">'+fmt(price)+'<span style="font-weight:400;font-size:11px;color:#aaa;margin-left:3px;">/total</span></div>'
     +'</div>';
   window._uzuPopup=new mapboxgl.Popup({offset:25,closeButton:false,className:'uzu-popup'}).setLngLat(coords).setHTML(html).addTo(map);
+  window._uzuOpenPopupId=id;
   var ref=window._uzuPopup;
-  // Renderiza coração imediatamente com estado actual de login
-  renderHeart(id, !!_uzuLocalFavs[id]);
+  setTimeout(function(){ renderHeart(id, !!_uzuLocalFavs[id]); }, 50);
   // Busca dados completos
   fetch('https://www.uzuhome.com/version-734wl/api/1.1/obj/propriedades/'+id)
     .then(function(r){return r.json();})
