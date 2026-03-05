@@ -223,8 +223,9 @@ function normalizeImageUrl(u){
 // Bubble insere loggedIn=true/false dinamicamente no src do iframe
 var _uzuLoggedIn = (function(){
   try{
-    var v = (new URLSearchParams(window.location.search).get('loggedIn')||'').toLowerCase();
-    // Bubble PT retorna "sim", EN retorna "true"
+    // Remove brackets que o Bubble às vezes adiciona: [sim] → sim
+    var v = (new URLSearchParams(window.location.search).get('loggedIn')||'')
+              .toLowerCase().replace(/[\[\]]/g,'').trim();
     return v === 'true' || v === 'sim' || v === 'yes' || v === '1';
   }catch(e){return false;}
 })();
