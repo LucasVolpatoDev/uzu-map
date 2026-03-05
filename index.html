@@ -555,10 +555,20 @@ function openPopup(id,coords,price,img){
         mEl.innerHTML=pts.join('');
       }
       if(iEl){var ri=p['cover_url']||'';if(Array.isArray(ri))ri=ri[0]||'';var iu=normalizeImageUrl(String(ri).trim());if(iu)iEl.src=iu;}
-      // Verifica se já está nos favoritos (campo Favorit da propriedade)
+      // Verifica se já está nos favoritos
       if(_uzuLoggedIn&&_uzuCurrentUserId){
-        var favs=p['Favorit']||[];
-        var isFav=Array.isArray(favs)?favs.indexOf(_uzuCurrentUserId)!==-1:false;
+        // Log para descobrir nome real do campo
+        var allKeys=Object.keys(p);
+        var favKey=allKeys.filter(function(k){return k.toLowerCase().indexOf('favor')!==-1;})[0];
+        console.log('[FAV] Campos disponíveis:', allKeys.join(', '));
+        console.log('[FAV] Campo favorito encontrado:', favKey, '→', p[favKey]);
+        console.log('[FAV] userId:', _uzuCurrentUserId);
+        var favs=(favKey?p[favKey]:null)||[];
+        if(typeof favs==='string')favs=[favs];
+        var isFav=Array.isArray(favs)&&favs.indexOf(_uzuCurrentUserId)!==-1;
+        // Também verifica cache local
+        if(_uzuLocalFavs[id]===true)isFav=true;
+        console.log('[FAV] isFav:', isFav, 'favs:', JSON.stringify(favs));
         _uzuLocalFavs[id]=isFav;
         renderHeart(id, isFav);
       }
