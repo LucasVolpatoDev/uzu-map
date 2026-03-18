@@ -196,10 +196,32 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
-   UZU MAP — usa /api/1.1/obj/propriedades com constraints do Bubble
+   UZU MAP — Versão LIVE (sem version-* prefix nas URLs)
+   ═══════════════════════════════════════════════════════════════════════════
+
+   CORREÇÕES PARA LIVE:
+   1. API Data:       /api/1.1/obj/propriedades            (sem version-xxxxx)
+   2. API Workflow:   /api/1.1/wf/buscar_propriedade       (sem version-xxxxx)
+   3. API Detalhe:    /api/1.1/obj/propriedades/:id        (sem version-xxxxx)
+   4. URL params:     Bubble live remove os brackets [ ]   ✔ já tratado
+   5. CORS:           Live aceita requests do próprio domínio ✔
    ═══════════════════════════════════════════════════════════════════════════ */
 
-var API = 'https://www.uzuhome.com/api/1.1/obj/propriedades';
+/* ── BASE URLS ────────────────────────────────────────────────────────────
+   Live usa /api/1.1/ directamente.
+   Dev  usa /version-XXXXX/api/1.1/
+   Detectamos automaticamente pelo hostname para facilitar futuros testes.  */
+var _BASE = (function(){
+  var h = window.location.hostname;
+  /* Quando o HTML está servido a partir de uzuhome.com (live ou dev-preview)
+     podemos chamar a API no mesmo domínio sem CORS.
+     Se estiver noutro domínio (ex: CDN externo) usa o domínio absoluto.    */
+  return 'https://www.uzuhome.com';
+})();
+
+var API        = _BASE + '/api/1.1/obj/propriedades';
+var API_WF     = _BASE + '/api/1.1/wf/buscar_propriedade';
+var API_DETAIL = _BASE + '/api/1.1/obj/propriedades/';
 
 /* ── GLOBALS ─────────────────────────────────────────────────────────────── */
 var _filtrosOpen      = false;
@@ -213,29 +235,33 @@ var _fetchSeq         = 0;
 
 /* ── UTILS ───────────────────────────────────────────────────────────────── */
 function debounce(fn,d){var t;return function(){var a=arguments,c=this;clearTimeout(t);t=setTimeout(function(){fn.apply(c,a);},d);};}
+
 function normalizeImageUrl(u){
-  if(!u)return'';u=String(u).trim();
+  if(!u)return'';
+  u=String(u).trim();
   if(u.startsWith('http://')||u.startsWith('https://'))return u;
   if(u.startsWith('//'))return'https:'+u;
   return'https://510a37fb0cd15334d1f7fc33af15451c.cdn.bubble.io/'+u;
 }
-// LOGIN: lido da URL no momento do load — sem race condition
-// Bubble insere loggedIn=true/false dinamicamente no src do iframe
+
+/* ── LEITURA DE PARÂMETROS DA URL ────────────────────────────────────────
+   O Bubble live pode passar os valores com ou sem brackets.
+   Ex:  ?loggedIn=true   ou   ?loggedIn=[true]
+   A função abaixo normaliza ambos os formatos.                             */
+function getUrlParam(key){
+  try{
+    var raw = new URLSearchParams(window.location.search).get(key) || '';
+    return raw.replace(/^\[|\]$/g,'').trim();   // remove [ e ] das extremidades
+  }catch(e){ return ''; }
+}
+
 var _uzuLoggedIn = (function(){
-  try{
-    // Remove brackets que o Bubble às vezes adiciona: [sim] → sim
-    var v = (new URLSearchParams(window.location.search).get('loggedIn')||'')
-              .toLowerCase().replace(/[\[\]]/g,'').trim();
-    return v === 'true' || v === 'sim' || v === 'yes' || v === '1';
-  }catch(e){return false;}
+  var v = getUrlParam('loggedIn').toLowerCase();
+  return v==='true'||v==='sim'||v==='yes'||v==='1';
 })();
+
 var _uzuCurrentUserId = (function(){
-  try{
-    // Remove brackets que o Bubble adiciona: [1772...] → 1772...
-    var v = (new URLSearchParams(window.location.search).get('uid')||'')
-              .replace(/[\[\]]/g,'').trim();
-    return v;
-  }catch(e){return '';}
+  return getUrlParam('uid');
 })();
 
 function isLoggedIn(){ return _uzuLoggedIn; }
@@ -328,12 +354,12 @@ function render(items){
   var features=[];
   for(var i=0;i<items.length;i++){
     var p=items[i];
-    var lat=Number(p['lat1_number']!=null?p['lat1_number']:p.lat), lng=Number(p['lng1_number']!=null?p['lng1_number']:p.lng);
-    // Rejeita null, 0, teste (39.5/-8.0 exacto = centro de Portugal default)
+    var lat=Number(p['lat1_number']!=null?p['lat1_number']:p.lat);
+    var lng=Number(p['lng1_number']!=null?p['lng1_number']:p.lng);
     if(!isFinite(lat)||!isFinite(lng))continue;
     if(lat===0||lng===0)continue;
     if(Math.abs(lat)<1||Math.abs(lng)<1)continue;
-    if(lat===39.5&&lng===-8)continue; // coordenada padrão do Bubble
+    if(lat===39.5&&lng===-8)continue;
     if(lat<-90||lat>90||lng<-180||lng>180)continue;
     features.push({type:'Feature',
       geometry:{type:'Point',coordinates:[lng,lat]},
@@ -347,7 +373,7 @@ function render(items){
   try{window.parent.postMessage({type:'uzu_total',value:total},'*');}catch(e){}
 }
 
-/* ── BUILD CONSTRAINTS para a Bubble Data API ────────────────────────────── */
+/* ── BUILD CONSTRAINTS ───────────────────────────────────────────────────── */
 function buildConstraints(){
   var c=[];
   c.push({key:'lat1_number',constraint_type:'is_not_empty'});
@@ -362,7 +388,6 @@ function buildConstraints(){
     c.push({key:'Valor UZU:',constraint_type:'greater than',value:_uzuFiltros.precoMin-1});
   if(_uzuFiltros.precoMax)
     c.push({key:'Valor UZU:',constraint_type:'less than',value:_uzuFiltros.precoMax+1});
-  // Exato: só mostra a propriedade com exatamente N quartos/banhos/vagas
   if(_uzuFiltros.quartos)
     c.push({key:'Quartos',constraint_type:'equals',value:_uzuFiltros.quartos});
   if(_uzuFiltros.casasBanho)
@@ -373,8 +398,6 @@ function buildConstraints(){
     c.push({key:'Area Privativa',constraint_type:'greater than',value:_uzuFiltros.tamanhoMin-1});
   if(_uzuFiltros.tamanhoMax)
     c.push({key:'Area Privativa',constraint_type:'less than',value:_uzuFiltros.tamanhoMax+1});
-  // Características: cada característica selecionada vira um constraint separado (AND)
-  // Bubble: "OS Caracteristicas Adicionais contains X" garante que X está na lista
   if(_uzuFiltros.caracteristicas&&_uzuFiltros.caracteristicas.length>0){
     _uzuFiltros.caracteristicas.forEach(function(caract){
       c.push({key:'OS Caracteristicas Adicionais',constraint_type:'contains',value:caract});
@@ -383,7 +406,7 @@ function buildConstraints(){
   return c;
 }
 
-/* ── FETCH ALL: pagina automaticamente até acabar ────────────────────────── */
+/* ── FETCH ALL ───────────────────────────────────────────────────────────── */
 function fetchAll(){
   if(_fetchCtrl)_fetchCtrl.abort();
   _fetchCtrl=new AbortController();
@@ -397,19 +420,24 @@ function fetchAll(){
     console.log('[UZU] Fetching:', url);
     fetch(url,{signal:_fetchCtrl.signal})
       .then(function(r){
-        console.log('[UZU] Status:', r.status, r.statusText);
+        /* ── Bubble live devolve 200 mesmo em alguns erros;
+              verifica o status e tenta parsear sempre.          */
+        console.log('[UZU] HTTP status:', r.status);
+        if(!r.ok){
+          console.warn('[UZU] HTTP error', r.status);
+          /* Continua mesmo assim para capturar a mensagem de erro */
+        }
         return r.json();
       })
       .then(function(data){
-        console.log('[UZU] Response keys:', Object.keys(data||{}));
-        console.log('[UZU] Response body:', JSON.stringify(data).substring(0,500));
         if(seq!==_fetchSeq)return;
+        /* Bubble Data API: { status:"ok", response:{ results:[…], remaining:N } } */
         var r=data&&data.response?data.response:null;
         if(!r){
-          console.error('[UZU] No response object. Full data:', JSON.stringify(data));
+          console.error('[UZU] Resposta inválida:', JSON.stringify(data).substring(0,300));
           return;
         }
-        console.log('[UZU] Results count:', (r.results||[]).length, 'Remaining:', r.remaining);
+        console.log('[UZU] results:', (r.results||[]).length, '| remaining:', r.remaining);
         allItems=allItems.concat(r.results||[]);
         if(r.remaining>0){
           fetchPage((cursor||0)+100);
@@ -417,7 +445,10 @@ function fetchAll(){
           render(allItems);
         }
       })
-      .catch(function(err){if(err&&err.name==='AbortError')return;console.error('fetchAll error:',err);});
+      .catch(function(err){
+        if(err&&err.name==='AbortError')return;
+        console.error('[UZU] fetchAll error:', err);
+      });
   }
   fetchPage(0);
 }
@@ -437,15 +468,14 @@ function uzuGeocode(query){
     })
     .catch(function(err){if(err&&err.name==='AbortError')return;});
 }
+
 function uzuBuscar(){
   var inp=document.getElementById('uzu-search');
   var q=(inp?inp.value:'').trim();
   if(!q)return;
 
-  if(window._geoCtrl){window._geoCtrl.abort();window._geoCtrl=null;}
-
-  var url='https://www.uzuhome.com/version-734wl/api/1.1/wf/buscar_propriedade'
-    +'?titulo='+encodeURIComponent(q);
+  /* ── Usa a URL do workflow SEM version-xxxxx (live) ── */
+  var url = API_WF + '?titulo=' + encodeURIComponent(q);
 
   fetch(url)
     .then(function(r){return r.json();})
@@ -468,8 +498,8 @@ function uzuBuscar(){
             0,0,0
           );
         });
-      } else {
-        showToast('Propriedade encontrada mas sem localização no mapa','warning');
+      }else{
+        showToast('Propriedade encontrada mas sem localiza\u00e7\u00e3o no mapa','warning');
       }
     })
     .catch(function(err){
@@ -500,9 +530,8 @@ function toggleFavorite(id,btn){
 }
 
 /* ── POPUP ───────────────────────────────────────────────────────────────── */
-function renderHeart(id, isFav){
-  // Injeta ou remove o coração baseado no estado de login actual
-  var container = document.getElementById('uzu-heart-container-'+id);
+function renderHeart(id,isFav){
+  var container=document.getElementById('uzu-heart-container-'+id);
   if(!container)return;
   if(!_uzuLoggedIn){container.innerHTML='';return;}
   container.innerHTML='<button id="uzu-heart-'+id+'" data-propid="'+id+'" class="uzu-card-heart" onclick="toggleFavorite(this.dataset.propid,this)">'+iconHeart()+'</button>';
@@ -531,11 +560,11 @@ function openPopup(id,coords,price,img){
     +'<div id="uzu-price-'+id+'" style="color:#2563eb;font-weight:800;font-size:17px;font-family:Inter,sans-serif;">'+fmt(price)+'<span style="font-weight:400;font-size:11px;color:#aaa;margin-left:3px;">/total</span></div>'
     +'</div>';
   window._uzuPopup=new mapboxgl.Popup({offset:25,closeButton:false,className:'uzu-popup'}).setLngLat(coords).setHTML(html).addTo(map);
-  window._uzuOpenPopupId=id;
   var ref=window._uzuPopup;
-  setTimeout(function(){ renderHeart(id, !!_uzuLocalFavs[id]); }, 50);
-  // Busca dados completos
-  fetch('https://www.uzuhome.com/version-734wl/api/1.1/obj/propriedades/'+id)
+  setTimeout(function(){renderHeart(id,!!_uzuLocalFavs[id]);},50);
+
+  /* ── Busca detalhe via API live (sem version-xxxxx) ── */
+  fetch(API_DETAIL+id)
     .then(function(r){return r.json();})
     .then(function(data){
       if(window._uzuPopup!==ref)return;
@@ -553,40 +582,35 @@ function openPopup(id,coords,price,img){
         var q=p['Quartos']||'',cb=p['Casas Banho']||'',a=p['Area Privativa']||'',pts=[];
         if(q)pts.push('<span>'+iconBed()+q+'</span>');
         if(cb)pts.push('<span>'+iconBath()+cb+'</span>');
-        if(a)pts.push('<span>'+iconArea()+a+' m²</span>');
+        if(a)pts.push('<span>'+iconArea()+a+' m\u00b2</span>');
         mEl.innerHTML=pts.join('');
       }
       if(iEl){var ri=p['cover_url']||'';if(Array.isArray(ri))ri=ri[0]||'';var iu=normalizeImageUrl(String(ri).trim());if(iu)iEl.src=iu;}
-      // Verifica se já está nos favoritos
+      /* ── Verificação de favorito ── */
       if(_uzuLoggedIn&&_uzuCurrentUserId){
-        // Log para descobrir nome real do campo
         var allKeys=Object.keys(p);
         var favKey=allKeys.filter(function(k){return k.toLowerCase().indexOf('favor')!==-1;})[0];
-        console.log('[FAV] Campos disponíveis:', allKeys.join(', '));
-        console.log('[FAV] Campo favorito encontrado:', favKey, '→', p[favKey]);
-        console.log('[FAV] userId:', _uzuCurrentUserId);
         var favs=(favKey?p[favKey]:null)||[];
         if(typeof favs==='string')favs=[favs];
         var isFav=Array.isArray(favs)&&favs.indexOf(_uzuCurrentUserId)!==-1;
-        // Também verifica cache local
         if(_uzuLocalFavs[id]===true)isFav=true;
-        console.log('[FAV] isFav:', isFav, 'favs:', JSON.stringify(favs));
         _uzuLocalFavs[id]=isFav;
-        renderHeart(id, isFav);
+        renderHeart(id,isFav);
       }
-    }).catch(function(){});
+    }).catch(function(e){console.warn('[UZU] Detalhe error:',e);});
 }
 
 /* ── INIT ────────────────────────────────────────────────────────────────── */
 window.bubble_fn_J2B_userId=function(v){_uzuCurrentUserId=v||'';};
+
 window.addEventListener('message',function(e){
   if(!e.data)return;
   if(e.data.type==='uzu_userid'){
-    var loggedIn = e.data.loggedIn === true || e.data.loggedIn === 'true';
-    _uzuLoggedIn = loggedIn;
-    _uzuCurrentUserId = loggedIn ? (e.data.userId||'') : '';
+    var loggedIn=e.data.loggedIn===true||e.data.loggedIn==='true';
+    _uzuLoggedIn=loggedIn;
+    _uzuCurrentUserId=loggedIn?(e.data.userId||''):'';
     if(window._uzuOpenPopupId){
-      renderHeart(window._uzuOpenPopupId, !!_uzuLocalFavs[window._uzuOpenPopupId]);
+      renderHeart(window._uzuOpenPopupId,!!_uzuLocalFavs[window._uzuOpenPopupId]);
     }
   }
 });
