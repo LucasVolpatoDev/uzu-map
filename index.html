@@ -93,7 +93,7 @@
         <button class="f-pill" data-val="Moradia" onclick="togglePill(this,'tipo')">Moradia</button>
         <button class="f-pill" data-val="Terreno" onclick="togglePill(this,'tipo')">Terreno</button>
         <button class="f-pill" data-val="Quinta e Herdade" onclick="togglePill(this,'tipo')">Quinta e Herdade</button>
-        <button class="f-pill" data-val="Espaço comercial" onclick="togglePill(this,'tipo')">Espaço comercial</button>
+        <button class="f-pill" data-val="Espa&#231;o comercial" onclick="togglePill(this,'tipo')">Espa&#231;o comercial</button>
         <button class="f-pill" data-val="Outro" onclick="togglePill(this,'tipo')">Outro</button>
       </div>
     </div>
@@ -169,19 +169,19 @@
         <button class="f-pill" data-val="Varanda" onclick="toggleCaract(this)">Varanda</button>
         <button class="f-pill" data-val="Elevador" onclick="toggleCaract(this)">Elevador</button>
         <button class="f-pill" data-val="Piscina" onclick="toggleCaract(this)">Piscina</button>
-        <button class="f-pill" data-val="Terraço" onclick="toggleCaract(this)">Terraço</button>
+        <button class="f-pill" data-val="Terra&#231;o" onclick="toggleCaract(this)">Terra&#231;o</button>
         <button class="f-pill" data-val="Vista mar" onclick="toggleCaract(this)">Vista mar</button>
-        <button class="f-pill" data-val="Rés do chão" onclick="toggleCaract(this)">Rés do chão</button>
-        <button class="f-pill" data-val="Água" onclick="toggleCaract(this)">Água</button>
-        <button class="f-pill" data-val="Gás" onclick="toggleCaract(this)">Gás</button>
+        <button class="f-pill" data-val="R&#233;s do ch&#227;o" onclick="toggleCaract(this)">R&#233;s do ch&#227;o</button>
+        <button class="f-pill" data-val="&#193;gua" onclick="toggleCaract(this)">&#193;gua</button>
+        <button class="f-pill" data-val="G&#225;s" onclick="toggleCaract(this)">G&#225;s</button>
         <button class="f-pill" data-val="Lareira" onclick="toggleCaract(this)">Lareira</button>
         <button class="f-pill" data-val="Vidros Duplos" onclick="toggleCaract(this)">Vidros Duplos</button>
         <button class="f-pill" data-val="Caixilharia Dupla" onclick="toggleCaract(this)">Caixilharia Dupla</button>
-        <button class="f-pill" data-val="Estores Elétricos" onclick="toggleCaract(this)">Estores Elétricos</button>
-        <button class="f-pill" data-val="Mármore" onclick="toggleCaract(this)">Mármore</button>
+        <button class="f-pill" data-val="Estores El&#233;tricos" onclick="toggleCaract(this)">Estores El&#233;tricos</button>
+        <button class="f-pill" data-val="M&#225;rmore" onclick="toggleCaract(this)">M&#225;rmore</button>
         <button class="f-pill" data-val="Bomba de Calor" onclick="toggleCaract(this)">Bomba de Calor</button>
-        <button class="f-pill" data-val="Painéis Solares" onclick="toggleCaract(this)">Painéis Solares</button>
-        <button class="f-pill" data-val="Piso de Mármore" onclick="toggleCaract(this)">Piso de Mármore</button>
+        <button class="f-pill" data-val="Pain&#233;is Solares" onclick="toggleCaract(this)">Pain&#233;is Solares</button>
+        <button class="f-pill" data-val="Piso de M&#225;rmore" onclick="toggleCaract(this)">Piso de M&#225;rmore</button>
         <button class="f-pill" data-val="Eletricidade" onclick="toggleCaract(this)">Eletricidade</button>
         <button class="f-pill" data-val="Cozinha Equipada" onclick="toggleCaract(this)">Cozinha Equipada</button>
         <button class="f-pill" data-val="Piso Assoalhado" onclick="toggleCaract(this)">Piso Assoalhado</button>
@@ -195,30 +195,16 @@
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════════════════════
-   UZU MAP — Versão LIVE (sem version-* prefix nas URLs)
-   ═══════════════════════════════════════════════════════════════════════════
+/* =============================================================================
+   UZU MAP — Versão LIVE — corrigido com campos reais da API
+   =============================================================================
+   CAMPOS CONFIRMADOS pela API:
+     Coordenadas : "lat" e "lng"  (number, raiz do objecto)
+     Publicado   : "Publicado?"   (boolean true/false, NÃO string)
+   =============================================================================*/
 
-   CORREÇÕES PARA LIVE:
-   1. API Data:       /api/1.1/obj/propriedades            (sem version-xxxxx)
-   2. API Workflow:   /api/1.1/wf/buscar_propriedade       (sem version-xxxxx)
-   3. API Detalhe:    /api/1.1/obj/propriedades/:id        (sem version-xxxxx)
-   4. URL params:     Bubble live remove os brackets [ ]   ✔ já tratado
-   5. CORS:           Live aceita requests do próprio domínio ✔
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* ── BASE URLS ────────────────────────────────────────────────────────────
-   Live usa /api/1.1/ directamente.
-   Dev  usa /version-XXXXX/api/1.1/
-   Detectamos automaticamente pelo hostname para facilitar futuros testes.  */
-var _BASE = (function(){
-  var h = window.location.hostname;
-  /* Quando o HTML está servido a partir de uzuhome.com (live ou dev-preview)
-     podemos chamar a API no mesmo domínio sem CORS.
-     Se estiver noutro domínio (ex: CDN externo) usa o domínio absoluto.    */
-  return 'https://www.uzuhome.com';
-})();
-
+/* ── BASE URLS fixas — nunca herdam params do iframe Bubble ─────────────── */
+var _BASE      = 'https://www.uzuhome.com';
 var API        = _BASE + '/api/1.1/obj/propriedades';
 var API_WF     = _BASE + '/api/1.1/wf/buscar_propriedade';
 var API_DETAIL = _BASE + '/api/1.1/obj/propriedades/';
@@ -228,7 +214,6 @@ var _filtrosOpen      = false;
 var _counters         = {quartos:0,casasBanho:0,vagas:0};
 var _filtrosPendentes = {};
 var _uzuFiltros       = {};
-var _uzuCurrentUserId = '';
 var _uzuLocalFavs     = {};
 var _fetchCtrl        = null;
 var _fetchSeq         = 0;
@@ -237,34 +222,28 @@ var _fetchSeq         = 0;
 function debounce(fn,d){var t;return function(){var a=arguments,c=this;clearTimeout(t);t=setTimeout(function(){fn.apply(c,a);},d);};}
 
 function normalizeImageUrl(u){
-  if(!u)return'';
-  u=String(u).trim();
+  if(!u)return'';u=String(u).trim();
   if(u.startsWith('http://')||u.startsWith('https://'))return u;
   if(u.startsWith('//'))return'https:'+u;
   return'https://510a37fb0cd15334d1f7fc33af15451c.cdn.bubble.io/'+u;
 }
 
-/* ── LEITURA DE PARÂMETROS DA URL ────────────────────────────────────────
-   O Bubble live pode passar os valores com ou sem brackets.
-   Ex:  ?loggedIn=true   ou   ?loggedIn=[true]
-   A função abaixo normaliza ambos os formatos.                             */
+/* ── LEITURA DE PARAMS DA URL — remove brackets do Bubble ───────────────── */
 function getUrlParam(key){
   try{
-    var raw = new URLSearchParams(window.location.search).get(key) || '';
-    return raw.replace(/^\[|\]$/g,'').trim();   // remove [ e ] das extremidades
-  }catch(e){ return ''; }
+    var raw=new URLSearchParams(window.location.search).get(key)||'';
+    return raw.replace(/^\[+|\]+$/g,'').trim();
+  }catch(e){return'';}
 }
 
-var _uzuLoggedIn = (function(){
-  var v = getUrlParam('loggedIn').toLowerCase();
+var _uzuLoggedIn=(function(){
+  var v=getUrlParam('loggedIn').toLowerCase();
   return v==='true'||v==='sim'||v==='yes'||v==='1';
 })();
 
-var _uzuCurrentUserId = (function(){
-  return getUrlParam('uid');
-})();
+var _uzuCurrentUserId=getUrlParam('uid');
 
-function isLoggedIn(){ return _uzuLoggedIn; }
+function isLoggedIn(){return _uzuLoggedIn;}
 function fmt(n){return'\u20ac'+(isFinite(n)?Number(n):0).toLocaleString('pt-PT');}
 
 /* ── FILTROS UI ──────────────────────────────────────────────────────────── */
@@ -351,21 +330,22 @@ function render(items){
   ensureSourceAndLayers();
   var src=map.getSource('properties');if(!src)return;
   if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
-  var features=[];
+  var features=[],skipped=0;
   for(var i=0;i<items.length;i++){
     var p=items[i];
-    var lat=Number(p['lat1_number']!=null?p['lat1_number']:p.lat);
-    var lng=Number(p['lng1_number']!=null?p['lng1_number']:p.lng);
-    if(!isFinite(lat)||!isFinite(lng))continue;
-    if(lat===0||lng===0)continue;
-    if(Math.abs(lat)<1||Math.abs(lng)<1)continue;
-    if(lat===39.5&&lng===-8)continue;
-    if(lat<-90||lat>90||lng<-180||lng>180)continue;
+    /* CAMPOS CONFIRMADOS: "lat" e "lng" directos na raiz do objecto */
+    var lat=Number(p.lat);
+    var lng=Number(p.lng);
+    if(!isFinite(lat)||!isFinite(lng)){skipped++;continue;}
+    if(lat===0&&lng===0){skipped++;continue;}
+    if(lat===39.5&&lng===-8){skipped++;continue;}
+    if(lat<-90||lat>90||lng<-180||lng>180){skipped++;continue;}
     features.push({type:'Feature',
       geometry:{type:'Point',coordinates:[lng,lat]},
       properties:{id:p._id,price:Math.round(Number(p['Valor UZU:']||0)),imgUrl:p.cover_url||''}
     });
   }
+  console.log('[UZU] render: '+features.length+' pins | '+skipped+' sem coords | total: '+items.length);
   src.setData({type:'FeatureCollection',features:features});
   map.once('sourcedata',function(e){if(e.sourceId==='properties'&&e.isSourceLoaded)map.triggerRepaint();});
   var total=features.length;
@@ -373,12 +353,15 @@ function render(items){
   try{window.parent.postMessage({type:'uzu_total',value:total},'*');}catch(e){}
 }
 
-/* ── BUILD CONSTRAINTS ───────────────────────────────────────────────────── */
+/* ── BUILD CONSTRAINTS ───────────────────────────────────────────────────
+   CORRECÇÃO CRÍTICA: "Publicado?" é booleano na live — usar true (não 'true')
+   Os campos lat/lng NÃO são usados como constraint (não existem como campo
+   indexável na live); a filtragem é feita no cliente dentro de render().   */
 function buildConstraints(){
   var c=[];
-  c.push({key:'lat1_number',constraint_type:'is_not_empty'});
-  c.push({key:'lng1_number',constraint_type:'is_not_empty'});
-  c.push({key:'Publicado?',constraint_type:'equals',value:'true'});
+
+  /* Booleano real — NÃO string */
+  c.push({key:'Publicado?',constraint_type:'equals',value:true});
 
   if(_uzuFiltros.tipo)
     c.push({key:'OS Tipo Propriedade',constraint_type:'equals',value:_uzuFiltros.tipo});
@@ -417,38 +400,22 @@ function fetchAll(){
     if(seq!==_fetchSeq)return;
     var constraints=buildConstraints();
     var url=API+'?limit=100&cursor='+(cursor||0)+'&constraints='+encodeURIComponent(JSON.stringify(constraints));
-    console.log('[UZU] Fetching:', url);
+    console.log('[UZU] GET',url);
     fetch(url,{signal:_fetchCtrl.signal})
       .then(function(r){
-        /* ── Bubble live devolve 200 mesmo em alguns erros;
-              verifica o status e tenta parsear sempre.          */
-        console.log('[UZU] HTTP status:', r.status);
-        if(!r.ok){
-          console.warn('[UZU] HTTP error', r.status);
-          /* Continua mesmo assim para capturar a mensagem de erro */
-        }
+        console.log('[UZU] HTTP',r.status);
         return r.json();
       })
       .then(function(data){
         if(seq!==_fetchSeq)return;
-        /* Bubble Data API: { status:"ok", response:{ results:[…], remaining:N } } */
         var r=data&&data.response?data.response:null;
-        if(!r){
-          console.error('[UZU] Resposta inválida:', JSON.stringify(data).substring(0,300));
-          return;
-        }
-        console.log('[UZU] results:', (r.results||[]).length, '| remaining:', r.remaining);
+        if(!r){console.error('[UZU] resposta invalida:',JSON.stringify(data).substring(0,300));return;}
+        console.log('[UZU] results:'+( r.results||[]).length+' remaining:'+r.remaining);
         allItems=allItems.concat(r.results||[]);
-        if(r.remaining>0){
-          fetchPage((cursor||0)+100);
-        }else{
-          render(allItems);
-        }
+        if(r.remaining>0){fetchPage((cursor||0)+100);}
+        else{render(allItems);}
       })
-      .catch(function(err){
-        if(err&&err.name==='AbortError')return;
-        console.error('[UZU] fetchAll error:', err);
-      });
+      .catch(function(err){if(err&&err.name==='AbortError')return;console.error('[UZU] fetch error:',err);});
   }
   fetchPage(0);
 }
@@ -473,39 +440,21 @@ function uzuBuscar(){
   var inp=document.getElementById('uzu-search');
   var q=(inp?inp.value:'').trim();
   if(!q)return;
-
-  /* ── Usa a URL do workflow SEM version-xxxxx (live) ── */
-  var url = API_WF + '?titulo=' + encodeURIComponent(q);
-
-  fetch(url)
+  fetch(API_WF+'?titulo='+encodeURIComponent(q))
     .then(function(r){return r.json();})
     .then(function(data){
       var r=data&&data.response?data.response:null;
       if(!r||!r.ids){uzuGeocode(q);return;}
-
-      var lat=Number(r.lats);
-      var lng=Number(r.lngs);
-
+      var lat=Number(r.lats),lng=Number(r.lngs);
       if(isFinite(lat)&&isFinite(lng)&&Math.abs(lat)>0.5&&Math.abs(lng)>0.5){
         if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
         map.flyTo({center:[lng,lat],zoom:15,speed:1.4,curve:1.5,essential:true});
         map.once('moveend',function(){
-          openPopup(
-            r.ids,[lng,lat],
-            Number(r.prices||0),
-            normalizeImageUrl(r.image_urls||''),
-            r.titulo||'',
-            0,0,0
-          );
+          openPopup(r.ids,[lng,lat],Number(r.prices||0),normalizeImageUrl(r.image_urls||''));
         });
-      }else{
-        showToast('Propriedade encontrada mas sem localiza\u00e7\u00e3o no mapa','warning');
-      }
+      }else{showToast('Propriedade encontrada mas sem localiza\u00e7\u00e3o','warning');}
     })
-    .catch(function(err){
-      console.error('[BUSCA] erro:',err);
-      uzuGeocode(q);
-    });
+    .catch(function(err){console.error('[BUSCA]',err);uzuGeocode(q);});
 }
 
 /* ── ICONS ───────────────────────────────────────────────────────────────── */
@@ -563,7 +512,6 @@ function openPopup(id,coords,price,img){
   var ref=window._uzuPopup;
   setTimeout(function(){renderHeart(id,!!_uzuLocalFavs[id]);},50);
 
-  /* ── Busca detalhe via API live (sem version-xxxxx) ── */
   fetch(API_DETAIL+id)
     .then(function(r){return r.json();})
     .then(function(data){
@@ -585,19 +533,22 @@ function openPopup(id,coords,price,img){
         if(a)pts.push('<span>'+iconArea()+a+' m\u00b2</span>');
         mEl.innerHTML=pts.join('');
       }
-      if(iEl){var ri=p['cover_url']||'';if(Array.isArray(ri))ri=ri[0]||'';var iu=normalizeImageUrl(String(ri).trim());if(iu)iEl.src=iu;}
-      /* ── Verificação de favorito ── */
+      if(iEl){
+        var ri=p['cover_url']||'';
+        if(Array.isArray(ri))ri=ri[0]||'';
+        var iu=normalizeImageUrl(String(ri).trim());
+        if(iu)iEl.src=iu;
+      }
+      /* Verificação de favorito — campo "Favorit" (array de user IDs) */
       if(_uzuLoggedIn&&_uzuCurrentUserId){
-        var allKeys=Object.keys(p);
-        var favKey=allKeys.filter(function(k){return k.toLowerCase().indexOf('favor')!==-1;})[0];
-        var favs=(favKey?p[favKey]:null)||[];
+        var favs=p['Favorit']||[];
         if(typeof favs==='string')favs=[favs];
         var isFav=Array.isArray(favs)&&favs.indexOf(_uzuCurrentUserId)!==-1;
         if(_uzuLocalFavs[id]===true)isFav=true;
         _uzuLocalFavs[id]=isFav;
         renderHeart(id,isFav);
       }
-    }).catch(function(e){console.warn('[UZU] Detalhe error:',e);});
+    }).catch(function(e){console.warn('[UZU] detalhe error:',e);});
 }
 
 /* ── INIT ────────────────────────────────────────────────────────────────── */
@@ -609,9 +560,7 @@ window.addEventListener('message',function(e){
     var loggedIn=e.data.loggedIn===true||e.data.loggedIn==='true';
     _uzuLoggedIn=loggedIn;
     _uzuCurrentUserId=loggedIn?(e.data.userId||''):'';
-    if(window._uzuOpenPopupId){
-      renderHeart(window._uzuOpenPopupId,!!_uzuLocalFavs[window._uzuOpenPopupId]);
-    }
+    if(window._uzuOpenPopupId){renderHeart(window._uzuOpenPopupId,!!_uzuLocalFavs[window._uzuOpenPopupId]);}
   }
 });
 
@@ -646,10 +595,7 @@ map.on('click',function(e){
   if(!hits||!hits.length)return;
   for(var i=0;i<hits.length;i++){
     var props=hits[i].properties||{};
-    if(props.id){
-      openPopup(props.id,hits[i].geometry.coordinates.slice(),Number(props.price||0),props.imgUrl||'');
-      return;
-    }
+    if(props.id){openPopup(props.id,hits[i].geometry.coordinates.slice(),Number(props.price||0),props.imgUrl||'');return;}
   }
 });
 map.on('mouseenter','unclustered-point',function(){map.getCanvas().style.cursor='pointer';});
