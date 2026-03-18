@@ -206,7 +206,7 @@
 /* ── BASE URLS fixas — nunca herdam params do iframe Bubble ─────────────── */
 var _BASE      = 'https://www.uzuhome.com';
 var API        = _BASE + '/api/1.1/obj/propriedades';
-var API_WF     = _BASE + '/api/1.1/wf/buscar_propriedade';
+var API_WF     = _BASE + '/api/1.1/wf/buscar_propriedade_copy';
 var API_DETAIL = _BASE + '/api/1.1/obj/propriedades/';
 
 /* ── GLOBALS ─────────────────────────────────────────────────────────────── */
@@ -469,23 +469,39 @@ function uzuBuscar(){
   var inp=document.getElementById('uzu-search');
   var q=(inp?inp.value:'').trim();
   if(!q)return;
-  fetch(API_WF+'?titulo='+encodeURIComponent(q))
+
+  var url=API_WF+'?titulo='+encodeURIComponent(q);
+  console.log('[BUSCA] GET',url);
+
+  fetch(url)
     .then(function(r){return r.json();})
     .then(function(data){
+      console.log('[BUSCA] resposta:', JSON.stringify(data).substring(0,400));
       var r=data&&data.response?data.response:null;
-      if(!r||!r.ids){uzuGeocode(q);return;}
+      /* ids pode ser string, numero ou array — valida qualquer caso */
+      var hasId=r&&r.ids!=null&&String(r.ids).trim()!==''&&String(r.ids).trim()!=='null';
+      if(!hasId){
+        console.warn('[BUSCA] sem id valido, cai no geocoding. r='+JSON.stringify(r));
+        uzuGeocode(q);
+        return;
+      }
       var lat=Number(r.lats),lng=Number(r.lngs);
+      console.log('[BUSCA] id:',r.ids,' lat:',lat,' lng:',lng);
       if(isFinite(lat)&&isFinite(lng)&&Math.abs(lat)>0.5&&Math.abs(lng)>0.5){
         if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
         map.flyTo({center:[lng,lat],zoom:15,speed:1.4,curve:1.5,essential:true});
         map.once('moveend',function(){
           openPopup(r.ids,[lng,lat],Number(r.prices||0),normalizeImageUrl(r.image_urls||''));
         });
-      }else{showToast('Propriedade encontrada mas sem localiza\u00e7\u00e3o','warning');}
+      }else{
+        showToast('Propriedade encontrada mas sem localização','warning');
+      }
     })
-    .catch(function(err){console.error('[BUSCA]',err);uzuGeocode(q);});
+    .catch(function(err){
+      console.error('[BUSCA] erro:',err);
+      uzuGeocode(q);
+    });
 }
-
 /* ── ICONS ───────────────────────────────────────────────────────────────── */
 function iconBed(){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20v-6a2 2 0 012-2h16a2 2 0 012 2v6"/><path d="M2 14v-4a2 2 0 012-2h4v6"/><rect x="2" y="8" width="20" height="6" rx="2"/></svg>';}
 function iconBath(){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16v4a4 4 0 01-4 4H8a4 4 0 01-4-4v-4z"/><path d="M6 12V6a2 2 0 012-2h1"/></svg>';}
