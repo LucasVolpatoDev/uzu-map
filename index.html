@@ -324,22 +324,51 @@ function ensureSourceAndLayers(){
   map.addLayer({id:'unclustered-point',type:'symbol',source:'properties',filter:['!',['has','point_count']],layout:{'text-field':['concat','\u20ac',['to-string',['coalesce',['get','price'],0]]],'text-size':12,'text-font':['DIN Offc Pro Medium','Arial Unicode MS Bold']},paint:{'text-color':'#1a1a2e'}});
 }
 
+/* ── JITTER — dispersao deterministica por ID ───────────────────────────
+   Pins com coords exactamente iguais ficam dispersos em circulo pequeno.
+   Raio ~0.00008 graus = ~9 metros. Consistente: mesmo ID = mesmo offset. */
+function idJitter(id){
+  var h1=0,h2=0;
+  for(var i=0;i<id.length;i++){
+    var c=id.charCodeAt(i);
+    h1=((h1<<5)-h1+c)&0xffffffff;
+    h2=((h2<<7)-h2+c*31)&0xffffffff;
+  }
+  var r1=(h1>>>0)/4294967296;
+  var r2=(h2>>>0)/4294967296;
+  var angle=r1*2*Math.PI;
+  var radius=0.00008;
+  return{dlat:Math.sin(angle)*radius*(0.5+r2*0.5),dlng:Math.cos(angle)*radius*(0.5+r2*0.5)};
+}
+
 /* ── RENDER ──────────────────────────────────────────────────────────────── */
 function render(items){
   window._lastFeatures=items;
   ensureSourceAndLayers();
   var src=map.getSource('properties');if(!src)return;
   if(window._uzuPopup){window._uzuPopup.remove();window._uzuPopup=null;}
+
+  /* Conta ocorrencias de cada coord para saber onde aplicar jitter */
+  var coordCount={};
+  for(var k=0;k<items.length;k++){
+    var ck=String(items[k].lat)+'_'+String(items[k].lng);
+    coordCount[ck]=(coordCount[ck]||0)+1;
+  }
+
   var features=[],skipped=0;
   for(var i=0;i<items.length;i++){
     var p=items[i];
-    /* CAMPOS CONFIRMADOS: "lat" e "lng" directos na raiz do objecto */
     var lat=Number(p.lat);
     var lng=Number(p.lng);
     if(!isFinite(lat)||!isFinite(lng)){skipped++;continue;}
     if(lat===0&&lng===0){skipped++;continue;}
     if(lat===39.5&&lng===-8){skipped++;continue;}
     if(lat<-90||lat>90||lng<-180||lng>180){skipped++;continue;}
+    /* Aplica jitter so onde ha pins sobrepostos */
+    if(coordCount[String(lat)+'_'+String(lng)]>1){
+      var j=idJitter(p._id);
+      lat+=j.dlat; lng+=j.dlng;
+    }
     features.push({type:'Feature',
       geometry:{type:'Point',coordinates:[lng,lat]},
       properties:{id:p._id,price:Math.round(Number(p['Valor UZU:']||0)),imgUrl:p.cover_url||''}
